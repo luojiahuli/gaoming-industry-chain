@@ -11,6 +11,7 @@ const COLORS = {
   investment: "#E85A5A",
   infrastructure: "#7BC47F",
   city: "#9B59B6",
+  opportunity: "#E67E22",
 };
 
 const TYPE_LABELS = {
@@ -19,6 +20,7 @@ const TYPE_LABELS = {
   investment: "招商项目",
   infrastructure: "基础设施",
   city: "周边城市",
+  opportunity: "招商机会",
 };
 
 // ── 初始化 ────────────────────────────────────────────────
@@ -191,6 +193,8 @@ function showTooltip(e, d) {
   if (d.stage) lines.push(`阶段: ${d.stage}`);
   if (d.infra_type) lines.push(`类型: ${d.infra_type}`);
   if (d.status) lines.push(`状态: ${d.status}`);
+  if (d.priority) lines.push(`优先级: ${d.priority}`);
+  if (d.estimated_investment) lines.push(`预计投资: ${d.estimated_investment}`);
   tooltip.innerHTML = lines.join("<br>");
   tooltip.style.display = "block";
 }
@@ -238,6 +242,8 @@ async function nodeClick(e, d) {
     renderInfrastructureDetail(d);
   } else if (d.type === "city") {
     renderCityDetail(d);
+  } else if (d.type === "opportunity") {
+    renderOpportunityDetail(d);
   }
 }
 
@@ -376,6 +382,29 @@ function renderCityDetail(d) {
     </div>`;
 }
 
+function renderOpportunityDetail(d) {
+  const el = document.getElementById("panel-content");
+  el.innerHTML = `
+    <div class="dp-header">
+      <span class="dp-type investment">招商引资机会</span>
+      <div class="dp-title">${d.name}</div>
+      <div class="dp-sub">优先级: ${d.priority || '中'} · ${d.category || ''}</div>
+    </div>
+    <div class="dp-section">
+      <h3>机会描述</h3>
+      <p style="font-size:13px;color:#bbb;line-height:1.6;">${d.description || ''}</p>
+    </div>
+    <div class="dp-section">
+      <h3>投资规模</h3>
+      <div class="dp-field"><span class="label">预计投资</span><span class="value">${d.estimated_investment || '-'}</span></div>
+      <div class="dp-field"><span class="label">优先级</span><span class="value" style="color:${d.priority === '高' ? '#E67E22' : '#F1C40F'}">${d.priority || '中'}</span></div>
+    </div>
+    <div class="dp-section">
+      <h3>目标企业</h3>
+      <p style="font-size:13px;color:#bbb;">${d.target_enterprises || '-'}</p>
+    </div>`;
+}
+
 function closePanel() {
   document.getElementById("detail-panel").classList.add("hidden");
   g.selectAll(".node-group circle").attr("opacity", 0.9);
@@ -408,7 +437,8 @@ async function doSearch(q) {
       data.slice(0, 20).forEach((item) => {
         const div = document.createElement("div");
         div.className = "sr-item";
-        div.innerHTML = `<span class="sr-tag ${item.type === 'enterprise' ? 'ent' : item.type === 'chain' ? 'chain' : item.type === 'investment' ? 'inv' : 'infra'}">${TYPE_LABELS[item.type] || item.type}</span> ${item.name}`;
+        const tagMap = {enterprise:'ent', chain:'chain', investment:'inv', infrastructure:'infra', opportunity:'opp'};
+        div.innerHTML = `<span class="sr-tag ${tagMap[item.type] || 'infra'}">${TYPE_LABELS[item.type] || item.type}</span> ${item.name}`;
         div.addEventListener("click", () => {
           searchResults.classList.remove("show");
           searchInput.value = item.name;

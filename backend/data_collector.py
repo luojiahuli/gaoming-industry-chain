@@ -287,6 +287,173 @@ CITY_RELATIONS = [
 # ═══════════════════════════════════════════════════════════
 # 经济影响评估 (2025-2030)
 # ═══════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════
+# 城市-产业链 上下游关系 (输入端→高明 / 输出端←高明)
+# ═══════════════════════════════════════════════════════════
+CITY_CHAIN_FLOWS = [
+    # 纺织服装: 上游供应来自广州/佛山禅城, 下游市场辐射全国
+    {"chain_id":1,"city":"广州","flow_type":"下游","description":"广州服装批发市场(中大布匹、十三行)是高明白胚布和成衣的主要销售渠道"},
+    {"chain_id":1,"city":"佛山禅城","flow_type":"下游","description":"禅城童装/针织产业集群吸收高明面料"},
+    {"chain_id":1,"city":"广州","flow_type":"上游","description":"广州中大布匹市场提供高端面料原料"},
+    # 陶瓷建材: 上游原料来自肇庆, 下游销往大湾区
+    {"chain_id":2,"city":"肇庆","flow_type":"上游","description":"肇庆提供陶瓷泥料、釉料等原材料"},
+    {"chain_id":2,"city":"佛山禅城","flow_type":"下游","description":"禅城华夏陶瓷博览城、中国陶瓷总部基地为高明陶瓷提供展示交易平台"},
+    {"chain_id":2,"city":"广州","flow_type":"下游","description":"广州建筑市场为高明陶瓷建材主要销售地"},
+    # 装备制造: 上游精密部件来自顺德/南海, 下游整机配套
+    {"chain_id":3,"city":"佛山顺德","flow_type":"上游","description":"顺德提供精密模具、电机等装备制造核心部件"},
+    {"chain_id":3,"city":"佛山南海","flow_type":"上游","description":"南海提供铝型材、五金件等装备制造原材料"},
+    {"chain_id":3,"city":"佛山顺德","flow_type":"下游","description":"高明装备为顺德家电企业提供生产线和部件"},
+    {"chain_id":3,"city":"广州","flow_type":"下游","description":"广州汽车产业为高明精密压铸提供需求市场"},
+    # 食品饮料: 上游包装材料/原料, 下游消费市场
+    {"chain_id":4,"city":"佛山三水","flow_type":"下游","description":"三水食品饮料产业集群与高明形成竞争互补"},
+    {"chain_id":4,"city":"广州","flow_type":"下游","description":"广州为海天味业全国最大消费市场"},
+    # 新材料: 上游研发资源, 下游多行业应用
+    {"chain_id":5,"city":"广州","flow_type":"上游","description":"广州高校和科研机构提供新材料研发支持和人才"},
+    {"chain_id":5,"city":"佛山南海","flow_type":"合作","description":"南海仙湖实验室本部与高明氢能中试基地形成研发-产业化联动"},
+    {"chain_id":5,"city":"肇庆","flow_type":"上游","description":"肇庆矿产资源(稀土、碳酸钙)为新材料提供原料"},
+    # 现代物流: 临空经济上下游
+    {"chain_id":6,"city":"广州","flow_type":"互补","description":"白云机场国际货运+高明新机场国内货运形成协同, 广湛高铁15分钟联通"},
+    {"chain_id":6,"city":"珠海","flow_type":"下游","description":"珠海高栏港与高明空港形成空海联运"},
+    {"chain_id":6,"city":"肇庆","flow_type":"上游","description":"肇庆大宗货运经西江航道从高明港中转"},
+    # 电子信息/数字经济: 上下游
+    {"chain_id":7,"city":"深圳","flow_type":"上游","description":"深圳电子信息产业为高明提供芯片、模组等核心元器件"},
+    {"chain_id":7,"city":"广州","flow_type":"上游","description":"广州高校和科研机构提供软件和算法人才"},
+    {"chain_id":7,"city":"东莞","flow_type":"竞争","description":"东莞电子制造配套与高明形成竞争"},
+    # 智能家居
+    {"chain_id":8,"city":"佛山顺德","flow_type":"上游","description":"顺德家电产业链为高明智能家居提供核心部件和品牌赋能"},
+    {"chain_id":8,"city":"广州","flow_type":"下游","description":"广州消费市场为高明智能家居提供主要客户"},
+    # 新型电力系统装备
+    {"chain_id":9,"city":"广州","flow_type":"上游","description":"南方电网总部(广州)为高明电力装备提供技术标准和订单"},
+    {"chain_id":9,"city":"佛山顺德","flow_type":"合作","description":"顺德电力装备企业与高明协同配套"},
+]
+
+# ═══════════════════════════════════════════════════════════
+# 招商引资机会点 (产业链缺口分析)
+# ═══════════════════════════════════════════════════════════
+INVESTMENT_OPPORTUNITIES = [
+    {
+        "chain_id":1,"name":"功能性面料研发生产基地","category":"技术升级",
+        "estimated_investment":"5-10亿","priority":"高",
+        "description":"引入具有防水、阻燃、抗菌等功能性面料研发生产能力的企业，补强纺织上游环节",
+        "target_enterprises":"佛山 local 纺织科技企业、上海/浙江功能性面料企业"
+    },
+    {
+        "chain_id":1,"name":"服装品牌总部/设计中心","category":"品牌打造",
+        "estimated_investment":"2-5亿","priority":"中",
+        "description":"引进知名服装品牌区域总部或独立设计师工作室，补强品牌设计下游环节",
+        "target_enterprises":"广州/深圳服装设计师品牌、电商服装品牌"
+    },
+    {
+        "chain_id":1,"name":"纺织工业互联网平台","category":"数字化转型",
+        "estimated_investment":"1-3亿","priority":"中",
+        "description":"建设纺织行业工业互联网平台，实现溢达等龙头企业的数字化赋能和产能共享",
+        "target_enterprises":"工业互联网平台企业(树根互联/腾讯云等)"
+    },
+    {
+        "chain_id":2,"name":"陶瓷固废循环利用项目","category":"绿色环保",
+        "estimated_investment":"3-8亿","priority":"高",
+        "description":"建设陶瓷废渣资源化利用生产线，解决陶瓷产业固废问题，年处理能力50万吨",
+        "target_enterprises":"固废处理环保企业(东江环保/格林美等)"
+    },
+    {
+        "chain_id":2,"name":"陶瓷智能化装备制造","category":"技术升级",
+        "estimated_investment":"5-10亿","priority":"高",
+        "description":"引入陶瓷智能喷墨打印、智能检测分选等装备制造企业，提升陶瓷产业自动化水平",
+        "target_enterprises":"陶瓷装备企业(科达制造/力泰等)"
+    },
+    {
+        "chain_id":3,"name":"精密伺服电机/减速器制造","category":"核心部件",
+        "estimated_investment":"8-15亿","priority":"高",
+        "description":"引进精密伺服电机、RV减速器等工业机器人核心部件生产企业，补强装备制造上游",
+        "target_enterprises":"汇川技术/绿的谐波等核心部件企业"
+    },
+    {
+        "chain_id":3,"name":"工业机器人本体制造基地","category":"整机制造",
+        "estimated_investment":"10-20亿","priority":"高",
+        "description":"建设工业机器人本体制造基地，利用高明成本优势和交通优势服务大湾区制造业",
+        "target_enterprises":"埃斯顿/新松机器人/佛山隆深等"
+    },
+    {
+        "chain_id":3,"name":"新能源汽车零部件产业园","category":"新能源",
+        "estimated_investment":"20-50亿","priority":"高",
+        "description":"规划新能源汽车零部件专业园区，承接比亚迪配套企业及上下游，依托佛山西部汽车产业走廊",
+        "target_enterprises":"比亚迪供应链企业/宁德时代配套/佛吉亚等Tier1"
+    },
+    {
+        "chain_id":4,"name":"冷链物流与中央厨房基地","category":"配套升级",
+        "estimated_investment":"5-10亿","priority":"高",
+        "description":"建设服务于食品饮料产业的冷链物流中心和中央厨房基地，完善食品产业链冷链环节",
+        "target_enterprises":"冷链物流企业(郑明物流/鲜易等)/团餐企业"
+    },
+    {
+        "chain_id":4,"name":"食品包装新材料研发基地","category":"配套升级",
+        "estimated_investment":"2-5亿","priority":"中",
+        "description":"引入可降解食品包装材料研发生产基地，服务海天等龙头企业包装需求",
+        "target_enterprises":"食品包装企业(紫江企业/永新股份等)"
+    },
+    {
+        "chain_id":5,"name":"氢燃料电池核心部件制造","category":"前沿技术",
+        "estimated_investment":"10-20亿","priority":"高",
+        "description":"引进质子交换膜、催化剂等氢燃料电池核心部件制造商，与仙湖实验室形成产研协同",
+        "target_enterprises":"氢燃料电池企业(国鸿氢能/亿华通/上海重塑等)"
+    },
+    {
+        "chain_id":5,"name":"碳纤维复合材料生产基地","category":"新材料",
+        "estimated_investment":"15-30亿","priority":"中",
+        "description":"建设高性能碳纤维复合材料生产基地，应用于航空航天(依托新机场)、汽车轻量化等领域",
+        "target_enterprises":"碳纤维企业(光威复材/中复神鹰等)"
+    },
+    {
+        "chain_id":6,"name":"航空食品加工基地","category":"临空经济",
+        "estimated_investment":"3-8亿","priority":"高",
+        "description":"依托广州新机场建设航空食品加工基地，为航线提供配餐服务，同时发展预制菜产业",
+        "target_enterprises":"航空食品企业(中翼航空食品/汉莎天厨等)"
+    },
+    {
+        "chain_id":6,"name":"跨境电商保税仓+分拨中心","category":"临空经济",
+        "estimated_investment":"5-15亿","priority":"高",
+        "description":"建设跨境电商保税仓储和全球分拨中心，利用新机场货运能力和综保区政策优势",
+        "target_enterprises":"跨境电商平台(SHEIN/Temu/速卖通等)仓储物流服务商"
+    },
+    {
+        "chain_id":6,"name":"临空高端制造园(航空修造)","category":"临空经济",
+        "estimated_investment":"20-50亿","priority":"中",
+        "description":"规划临空高端制造园区，聚焦航空零部件制造、飞机维修等航空修造产业",
+        "target_enterprises":"航空制造企业(中航工业供应链企业等)"
+    },
+    {
+        "chain_id":7,"name":"半导体封装测试基地","category":"核心产业",
+        "estimated_investment":"30-50亿","priority":"中",
+        "description":"引进半导体封装测试产线，服务大湾区半导体设计企业，差异化定位先进封装",
+        "target_enterprises":"封测企业(长电科技/通富微电/华天科技等)"
+    },
+    {
+        "chain_id":7,"name":"AI算力应用产业基地","category":"数字经济",
+        "estimated_investment":"5-15亿","priority":"高",
+        "description":"围绕润泽智算中心建设AI应用产业基地，吸引AI大模型训练、推理应用企业入驻",
+        "target_enterprises":"AI企业(商汤/旷视/科大讯飞等)/云计算企业"
+    },
+    {
+        "chain_id":8,"name":"智能家居物联网平台","category":"技术升级",
+        "estimated_investment":"2-8亿","priority":"中",
+        "description":"引进智能家居物联网平台企业，实现高明智能家居产品的互联互通和生态构建",
+        "target_enterprises":"物联网平台企业(小米生态链/华为鸿蒙等)"
+    },
+    {
+        "chain_id":9,"name":"新型储能电池系统集成","category":"新能源",
+        "estimated_investment":"10-25亿","priority":"高",
+        "description":"引进新型储能电池系统集成企业，服务于南方电网新型电力系统建设需求",
+        "target_enterprises":"储能企业(宁德时代储能/比亚迪储能/阳光电源等)"
+    },
+    {
+        "chain_id":9,"name":"智能电网设备制造基地","category":"电力装备",
+        "estimated_investment":"10-20亿","priority":"高",
+        "description":"建设智能电网设备(智能电表/配电自动化/变电站)制造基地，配套南方电网采购需求",
+        "target_enterprises":"电力设备企业(许继电气/国电南瑞/四方股份等)"
+    },
+]
+
+
 ECONOMIC_IMPACTS = [
     # 2025年现状
     {"chain_id":1,"year":2025,"output_value":130,"employment":17000,"gdp_contribution":39,"description":"纺织服装产业链-传统产能"},
@@ -410,8 +577,22 @@ def seed_database():
         sql = "INSERT INTO economic_impact (chain_id, year, output_value, employment, gdp_contribution, description) VALUES (:chain_id, :year, :output_value, :employment, :gdp_contribution, :description)"
         with get_conn() as conn:
             conn.execute(sql, ei)
-
     print(f"[数据] 经济影响数据写入完成")
+
+    # 城市-产业链上下游关系
+    for cf in CITY_CHAIN_FLOWS:
+        sql = "INSERT INTO city_chain_flows (chain_id, city, flow_type, description) VALUES (:chain_id, :city, :flow_type, :description)"
+        with get_conn() as conn:
+            conn.execute(sql, cf)
+    print(f"[数据] 城市-产业链关系 {len(CITY_CHAIN_FLOWS)} 条写入完成")
+
+    # 招商引资机会点
+    for op in INVESTMENT_OPPORTUNITIES:
+        sql = """INSERT INTO investment_opportunities (chain_id, name, category, estimated_investment, priority, description, target_enterprises)
+                 VALUES (:chain_id, :name, :category, :estimated_investment, :priority, :description, :target_enterprises)"""
+        with get_conn() as conn:
+            conn.execute(sql, op)
+    print(f"[数据] 招商引资机会 {len(INVESTMENT_OPPORTUNITIES)} 条写入完成")
     print(f"\n✅ 数据库初始化完成! 共 {len(GAOMING_ENTERPRISES)} 家企业, {len(INDUSTRY_CHAINS)} 条产业链, {len(INVESTMENTS)} 个招商项目")
     return chain_map
 

@@ -105,15 +105,45 @@ def push_to_feishu(webhook_url: str = None):
     import requests
     analysis = get_analysis()
 
+    from graph_builder import get_analysis
+    analysis = get_analysis()
+    gd = get_graph_data()
+    stats = {
+        "enterprises": sum(1 for n in gd['nodes'] if n['type'] == 'enterprise'),
+        "chains": sum(1 for n in gd['nodes'] if n['type'] == 'chain'),
+        "investments": sum(1 for n in gd['nodes'] if n['type'] == 'investment'),
+        "opportunities": sum(1 for n in gd['nodes'] if n['type'] == 'opportunity'),
+        "infrastructures": sum(1 for n in gd['nodes'] if n['type'] == 'infrastructure'),
+    }
+
+    # 构建机会点表格行
+    opp_rows = []
+    for opp in analysis.get("opportunities", []):
+        emoji = "🔴" if opp['priority'] == '高' else "🟡"
+        opp_rows.append(f"{emoji} **{opp['chain_name']}**: {opp['name']}（{opp['estimated_investment']}）")
+
+    # 构建城市流动行
+    flow_rows = []
+    arrow_map = {"上游":"←","下游":"→","互补":"↔","合作":"⇄","竞争":"⚡"}
+    for f in analysis.get("city_flows", []):
+        arr = arrow_map.get(f['flow_type'],'-')
+        flow_rows.append(f"{f['city']} {arr} {f['chain_name']}（{f['flow_type']}）")
+
+    # 企业分析行
+    ent_analysis_rows = []
+    for ea in analysis.get("enterprise_analysis", []):
+        stages_str = " | ".join(f"{s['stage']}{s['count']}家" for s in ea.get('stage_distribution',[]))
+        ent_analysis_rows.append(f"• **{ea['chain_name']}**: {ea['total_enterprises']}家企业, {ea['total_revenue']}亿产值, {ea['total_employees']}人\n  {stages_str}")
+
     lines = [
-        f"**🏭 高明区产业链知识图谱日报**",
+        f"**🏭 高明区产业链知识图谱增强版**",
         f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}",
         f"",
         f"**📊 数据概览**",
-        f"• 现有企业: {sum(1 for n in get_graph_data()['nodes'] if n['type'] == 'enterprise')} 家",
-        f"• 产业链: 9 条（含纺织、陶瓷、装备、食品、新材料、物流、电子信息、智能家居、电力装备）",
-        f"• 招商项目: 19 个",
-        f"• 基础设施: 7 项（机场·2026.3动工、广湛高铁·已通车等）",
+        f"• 现有企业: {stats['enterprises']} 家 | 产业链: {stats['chains']} 条",
+        f"• 招商项目: {stats['investments']} 个 | 招商机会: {stats['opportunities']} 个",
+        f"• 基础设施: {stats['infrastructures']} 项",
+        f"• 知识图谱: {len(gd['nodes'])} 节点 | {len(gd['edges'])} 条关系",
         f"",
         f"**📈 经济影响**",
     ]
@@ -122,17 +152,28 @@ def push_to_feishu(webhook_url: str = None):
 
     lines.extend([
         f"",
-        f"**🔗 产业链缺口建议**",
+        f"**🔗 产业链招商机会 ({len(opp_rows)}个)**",
     ])
-    for s in analysis.get("suggestions", []):
-        lines.append(f"• **{s['chain']}**: {s['suggestion']}")
+    lines.extend(opp_rows[:12])  # 最多12条
+
+    lines.extend([
+        f"",
+        f"**🏙️ 城市产业链上下游流动 ({len(flow_rows)}条)**",
+    ])
+    lines.extend(flow_rows[:10])
+
+    lines.extend([
+        f"",
+        f"**🏭 企业产业链分析**",
+    ])
+    lines.extend(ent_analysis_rows[:5])
 
     lines.extend([
         f"",
         f"**🏙️ 城市关系**",
     ])
     for cr in analysis.get("city_relations", []):
-        lines.append(f"• {cr['city_name']} ({cr['relation_type']}): {cr['description'][:50]}...")
+        lines.append(f"• {cr['city_name']} ({cr['relation_type']}): {cr['description'][:40]}...")
 
     lines.extend([
         f"",

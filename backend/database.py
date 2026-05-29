@@ -92,6 +92,27 @@ def init_db():
             description TEXT,
             FOREIGN KEY (chain_id) REFERENCES industry_chains(id)
         );
+
+        CREATE TABLE IF NOT EXISTS city_chain_flows (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            chain_id INTEGER NOT NULL,
+            city TEXT NOT NULL,
+            flow_type TEXT NOT NULL,          -- 上游/下游/合作/互补/竞争
+            description TEXT,
+            FOREIGN KEY (chain_id) REFERENCES industry_chains(id)
+        );
+
+        CREATE TABLE IF NOT EXISTS investment_opportunities (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            chain_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            category TEXT,
+            estimated_investment TEXT,
+            priority TEXT DEFAULT '中',
+            description TEXT,
+            target_enterprises TEXT,
+            FOREIGN KEY (chain_id) REFERENCES industry_chains(id)
+        );
         """)
     print("[DB] 数据库初始化完成")
 

@@ -1,4 +1,7 @@
-"""NetworkX 知识图谱构建 - 高明区产业关系网络"""
+"""NetworkX 知识图谱构建 - 高明区产业关系网络 (增强版)
+包含: 企业/产业链/招商/基建/城市/机会点 六类节点
+关系: 上下游/竞争/合作/互补/影响/入驻 七类边
+"""
 import sys, os, json
 sys.path.insert(0, os.path.dirname(__file__))
 
@@ -7,51 +10,33 @@ from database import *
 
 
 def build_graph() -> nx.DiGraph:
-    """构建完整产业知识图谱"""
+    """构建完整产业知识图谱 (增强版)"""
     G = nx.DiGraph()
+    enterprises = query("SELECT * FROM enterprises")
+    chains = query("SELECT * FROM industry_chains")
+    chain_map = {c['id']: f"chain_{c['id']}" for c in chains}
 
     # ── 1. 企业节点 ──────────────────────────────────────
-    enterprises = query("SELECT * FROM enterprises")
     for e in enterprises:
         G.add_node(
             f"ent_{e['id']}",
-            id=e['id'],
-            type="enterprise",
-            name=e['name'],
-            industry=e['industry'],
-            sub_industry=e.get('sub_industry',''),
-            chain_stage=e.get('chain_stage',''),
-            scale=e.get('scale',''),
-            revenue=e.get('revenue_annual',0),
-            employees=e.get('employee_count',0),
-            address=e.get('address',''),
-            source=e.get('source',''),
-            description=e.get('description',''),
-            # 前端展示用
-            label=e['name'],
-            title=f"{e['name']} ({e['industry']})",
-            size=min(60, max(20, e.get('revenue_annual',0) * 0.3 + 15)),
-            color="#4A90D9"  # 蓝色-企业
+            id=e['id'], type="enterprise", name=e['name'],
+            industry=e['industry'], sub_industry=e.get('sub_industry',''),
+            chain_stage=e.get('chain_stage',''), scale=e.get('scale',''),
+            revenue=e.get('revenue_annual',0), employees=e.get('employee_count',0),
+            address=e.get('address',''), source=e.get('source',''), description=e.get('description',''),
+            label=e['name'], title=f"{e['name']} ({e['industry']})",
+            size=min(60, max(20, e.get('revenue_annual',0) * 0.3 + 15)), color="#4A90D9"
         )
 
     # ── 2. 产业链节点 ────────────────────────────────────
-    chains = query("SELECT * FROM industry_chains")
-    chain_map = {}
     for c in chains:
         cid = f"chain_{c['id']}"
-        chain_map[c['id']] = cid
         G.add_node(
-            cid,
-            id=c['id'],
-            type="chain",
-            name=c['chain_name'],
-            category=c['category'],
-            description=c.get('description',''),
+            cid, id=c['id'], type="chain", name=c['chain_name'],
+            category=c['category'], description=c.get('description',''),
             surrounding_cities=json.loads(c.get('surrounding_cities','[]')) if isinstance(c.get('surrounding_cities'), str) else c.get('surrounding_cities',[]),
-            label=c['chain_name'],
-            title=c['chain_name'],
-            size=50,
-            color="#E8A838"  # 金色-产业链
+            label=c['chain_name'], title=c['chain_name'], size=50, color="#E8A838"
         )
 
     # ── 3. 企业→产业链 关联 ──────────────────────────────
@@ -60,146 +45,169 @@ def build_graph() -> nx.DiGraph:
                     JOIN enterprises e ON cr.enterprise_id=e.id
                     JOIN industry_chains ic ON cr.chain_id=ic.id""")
     for r in rels:
-        G.add_edge(
-            f"ent_{r['enterprise_id']}",
-            chain_map.get(r['chain_id'], f"chain_{r['chain_id']}"),
-            type="belongs_to",
-            role=r.get('role','配套'),
-            weight=2
-        )
+        G.add_edge(f"ent_{r['enterprise_id']}", chain_map.get(r['chain_id'], f"chain_{r['chain_id']}"),
+                   type="belongs_to", role=r.get('role','配套'), weight=2)
 
-    # ── 4. 招商企业节点 ──────────────────────────────────
+    # ── 4. 企业间关系 (同产业链竞争/上下游协作) ────────
+    # 同一产业链同环节=竞争, 不同环节=上下游协作
+    from itertools import combinations
+    for c in chains:
+        cid = c['id']
+        stage_ents = {}
+        for e in enterprises:
+            rel = query_one("SELECT role FROM chain_relations WHERE enterprise_id=:eid AND chain_id=:cid",
+                           {"eid": e['id'], "cid": cid})
+            if rel:
+                stage = e.get('chain_stage','配套')
+                stage_ents.setdefault(stage, []).append(e)
+
+        for stage, ents in stage_ents.items():
+            # 同环节竞争关系
+            for e1, e2 in combinations(ents, 2):
+                if e1['id'] != e2['id']:
+                    G.add_edge(f"ent_{e1['id']}", f"ent_{e2['id']}",
+                               type="competition", label="同业竞争", weight=0.5, color="#E74C3C")
+                    break  # 每条链每环节只加一条竞争边,避免图太密
+
+        # 上下游协作: 上游→中游→下游
+        chain_stages_order = ["上游","中游","下游","配套"]
+        for i in range(len(chain_stages_order)-1):
+            up = stage_ents.get(chain_stages_order[i], [])
+            down = stage_ents.get(chain_stages_order[i+1], [])
+            if up and down:
+                G.add_edge(f"ent_{up[0]['id']}", f"ent_{down[0]['id']}",
+                           type="supply_chain", label=f"{chain_stages_order[i]}→{chain_stages_order[i+1]}",
+                           weight=1.5, color="#2ECC71")
+
+    # ── 5. 招商企业节点 ──────────────────────────────────
     invs = query("SELECT * FROM investments")
     for inv in invs:
         inv_id = f"inv_{inv['id']}"
-        G.add_node(
-            inv_id,
-            id=inv['id'],
-            type="investment",
-            name=inv['enterprise_name'],
-            industry=inv.get('industry',''),
-            amount=inv.get('amount',0),
-            stage=inv.get('stage',''),
-            source=inv.get('source',''),
-            date=inv.get('announced_date',''),
-            description=inv.get('description',''),
-            label=inv['enterprise_name'],
-            title=f"[招商] {inv['enterprise_name']}",
-            size=35,
-            color="#E85A5A"  # 红色-招商
-        )
-        # 招商企业→产业链
+        G.add_node(inv_id, id=inv['id'], type="investment",
+                   name=inv['enterprise_name'], industry=inv.get('industry',''),
+                   amount=inv.get('amount',0), stage=inv.get('stage',''),
+                   source=inv.get('source',''), date=inv.get('announced_date',''),
+                   description=inv.get('description',''),
+                   label=inv['enterprise_name'], title=f"[招商] {inv['enterprise_name']}",
+                   size=35, color="#E85A5A")
         if inv.get('chain_id') and inv['chain_id'] in chain_map:
-            G.add_edge(
-                inv_id, chain_map[inv['chain_id']],
-                type="investment_in",
-                role="招商入驻",
-                weight=1.5
-            )
+            G.add_edge(inv_id, chain_map[inv['chain_id']], type="investment_in", role="招商入驻", weight=1.5)
 
-    # ── 5. 基础设施节点 ──────────────────────────────────
+    # ── 6. 基础设施节点 ──────────────────────────────────
     infras = query("SELECT * FROM infrastructure")
     for inf in infras:
         inf_id = f"infra_{inf['id']}"
         impact = json.loads(inf['impact_areas']) if isinstance(inf.get('impact_areas'), str) else inf.get('impact_areas',[])
-        G.add_node(
-            inf_id,
-            id=inf['id'],
-            type="infrastructure",
-            name=inf['name'],
-            infra_type=inf['infra_type'],
-            status=inf['status'],
-            description=inf.get('description',''),
-            completion=inf.get('planned_completion',''),
-            impact_areas=impact,
-            label=inf['name'],
-            title=f"[基建] {inf['name']}",
-            size=40,
-            color="#7BC47F"  # 绿色-基建
-        )
+        G.add_node(inf_id, id=inf['id'], type="infrastructure", name=inf['name'],
+                   infra_type=inf['infra_type'], status=inf['status'],
+                   description=inf.get('description',''), completion=inf.get('planned_completion',''),
+                   impact_areas=impact, label=inf['name'], title=f"[基建] {inf['name']}",
+                   size=40, color="#7BC47F")
 
-    # ── 6. 周边城市节点 ──────────────────────────────────
-    cities = query("SELECT * FROM city_relations")
-    seen_cities = {}
-    for city in cities:
-        ckey = city['city_name']
-        if ckey not in seen_cities:
-            seen_cities[ckey] = True
-            G.add_node(
-                f"city_{ckey}",
-                type="city",
-                name=ckey,
-                label=ckey,
-                title=f"城市: {ckey}",
-                size=30,
-                color="#9B59B6"  # 紫色-城市
-            )
-
-    # 城市关系边
-    for city in cities:
-        cname = city['city_name']
-        industries = city['industry']
-        rel_type = city['relation_type']
-        color_map = {"互补": "#2ECC71", "竞争": "#E74C3C", "合作": "#3498DB"}
-        G.add_edge(
-            f"city_{cname}", f"chain_{chain_map.get(city.get('chain_id'), 0)}" if city.get('chain_id') else f"city_{cname}",
-            type="city_relation",
-            relation_type=rel_type,
-            industry=industries,
-            description=city.get('description',''),
-            weight=1,
-            color=color_map.get(rel_type, "#95A5A6")
-        )
-
-    # 基建→产业链 影响线
+    # 基建→产业链影响
     for inf in infras:
         impact = json.loads(inf['impact_areas']) if isinstance(inf.get('impact_areas'), str) else inf.get('impact_areas',[])
         inf_id = f"infra_{inf['id']}"
-        for cid, cnode in chain_map.items():
-            chain_name = query_one("SELECT chain_name FROM industry_chains WHERE id=:id", {"id": cid})
-            if chain_name:
+        for cid in chain_map:
+            cn = query_one("SELECT chain_name FROM industry_chains WHERE id=:id", {"id": cid})
+            if cn:
                 for ia in impact:
-                    if ia in chain_name['chain_name'] or chain_name['chain_name'].startswith(ia):
-                        G.add_edge(inf_id, cnode, type="impacts", weight=2.5, color="#2ECC71")
+                    if ia in cn['chain_name'] or cn['chain_name'].startswith(ia):
+                        G.add_edge(inf_id, chain_map[cid], type="impacts", weight=2.5, color="#2ECC71")
 
-    # ── 7. 产业链间关联 (上下游) ────────────────────────
-    # 根据产业经济学建立价值链关联
+    # ── 7. 周边城市节点 + 城市-产业链上下游关系 ────────
+    cities_data = query("SELECT DISTINCT city_name FROM city_relations")
+    for cd in cities_data:
+        cname = cd['city_name']
+        G.add_node(f"city_{cname}", type="city", name=cname, label=cname,
+                   title=f"城市: {cname}", size=30, color="#9B59B6")
+
+    # 城市关系边 (互补/竞争/合作)
+    city_rels = query("SELECT * FROM city_relations")
+    color_map_relation = {"互补": "#2ECC71", "竞争": "#E74C3C", "合作": "#3498DB"}
+    for city in city_rels:
+        cname = city['city_name']
+        G.add_edge(f"city_{cname}", f"city_{cname}",
+                   type="city_tag", relation_type=city['relation_type'],
+                   industry=city['industry'], description=city.get('description',''),
+                   color=color_map_relation.get(city['relation_type'], "#95A5A6"))
+
+    # 城市-产业链 上下游流动边 (带方向!)
+    flows = query("SELECT * FROM city_chain_flows")
+    for f in flows:
+        cname = f['city']
+        cnode = chain_map.get(f['chain_id'])
+        city_node = f"city_{cname}"
+        if cnode and city_node in [n for n in G.nodes()]:
+            flow_type = f['flow_type']
+            if flow_type == "上游":
+                # 城市给高明供原料 → 城市→产业链
+                G.add_edge(city_node, cnode, type="city_chain_flow", flow_type="上游",
+                           label=f"供应", description=f.get('description',''), weight=1.5, color="#3498DB")
+            elif flow_type == "下游":
+                # 高明产品卖给城市 → 产业链→城市
+                G.add_edge(cnode, city_node, type="city_chain_flow", flow_type="下游",
+                           label=f"销售", description=f.get('description',''), weight=1.5, color="#2ECC71")
+            elif flow_type == "互补":
+                G.add_edge(city_node, cnode, type="city_chain_flow", flow_type="互补",
+                           label=f"互补", description=f.get('description',''), weight=1, color="#F39C12")
+            else:  # 合作/竞争
+                G.add_edge(city_node, cnode, type="city_chain_flow", flow_type=flow_type,
+                           label=flow_type, description=f.get('description',''), weight=1, color="#95A5A6")
+
+    # ── 8. 招商引资机会点节点 (新建!) ──────────────────
+    ops = query("SELECT * FROM investment_opportunities")
+    priority_colors = {"高": "#E67E22", "中": "#F1C40F", "低": "#95A5A6"}
+    for op in ops:
+        op_id = f"opp_{op['id']}"
+        pri_color = priority_colors.get(op.get('priority','中'), "#F1C40F")
+        G.add_node(op_id, id=op['id'], type="opportunity",
+                   name=op['name'], category=op.get('category',''),
+                   estimated_investment=op.get('estimated_investment',''),
+                   priority=op.get('priority','中'),
+                   target_enterprises=op.get('target_enterprises',''),
+                   description=op.get('description',''),
+                   label=op['name'][:15]+'…', title=f"[机会] {op['name']}",
+                   size=28, color=pri_color)
+        # 机会→产业链
+        if op['chain_id'] in chain_map:
+            G.add_edge(op_id, chain_map[op['chain_id']], type="opportunity_in",
+                       label=f"{op.get('estimated_investment','')}",
+                       weight=1, color="#F39C12")
+
+    # ── 9. 产业链间关联 (上下游价值链) ────────────────
     chain_deps = [
-        ("chain_5", "chain_3", "新材料→装备制造"),   # 新材料支撑装备制造
-        ("chain_1", "chain_6", "纺织→物流"),          # 纺织需要物流
-        ("chain_2", "chain_6", "陶瓷→物流"),          # 陶瓷需要物流
-        ("chain_4", "chain_6", "食品→物流"),          # 食品需要物流
-        ("chain_5", "chain_2", "新材料→陶瓷"),        # 新材料用于陶瓷
-        ("chain_1", "chain_3", "纺织→纺织机械"),      # 纺织需要纺织机械(装备制造)
+        ("chain_5", "chain_3", "新材料→装备制造"),
+        ("chain_1", "chain_6", "纺织→物流"),
+        ("chain_2", "chain_6", "陶瓷→物流"),
+        ("chain_4", "chain_6", "食品→物流"),
+        ("chain_5", "chain_2", "新材料→陶瓷"),
+        ("chain_1", "chain_3", "纺织→纺织机械"),
+        ("chain_7", "chain_3", "工业软件→智能装备"),
+        ("chain_5", "chain_9", "新材料→电力装备"),
+        ("chain_3", "chain_9", "精密制造→电力装备"),
+        ("chain_4", "chain_3", "食品→食品机械"),
     ]
     for src, dst, label in chain_deps:
-        if src in [f"chain_{c['id']}" for c in chains] and dst in [f"chain_{c['id']}" for c in chains]:
-            G.add_edge(src, dst, type="chain_link", label=label, weight=1, color="#95A5A6")
+        if src in chain_map.values() and dst in chain_map.values():
+            G.add_edge(src, dst, type="chain_link", label=label, weight=1.2, color="#95A5A6")
 
     print(f"[图谱] 图构建完成: {G.number_of_nodes()} 节点, {G.number_of_edges()} 条边")
     return G
 
 
 def get_graph_data() -> dict:
-    """导出为前端可用的 JSON (Force-directed graph format)"""
+    """导出为前端可用的 JSON"""
     G = build_graph()
-    nodes = []
-    edges = []
-
+    nodes, edges = [], []
     for n, attrs in G.nodes(data=True):
         node = {"id": n, **{k: v for k, v in attrs.items() if k != 'id'}}
-        # 确保必须字段
-        node.setdefault("label", n)
-        node.setdefault("type", "unknown")
-        node.setdefault("color", "#666")
-        node.setdefault("size", 20)
-        node.setdefault("title", n)
+        node.setdefault("label", n); node.setdefault("type", "unknown")
+        node.setdefault("color", "#666"); node.setdefault("size", 20); node.setdefault("title", n)
         nodes.append(node)
-
     for u, v, attrs in G.edges(data=True):
         edge = {"source": u, "target": v, **attrs}
         edges.append(edge)
-
     return {"nodes": nodes, "edges": edges}
 
 
@@ -209,93 +217,101 @@ def get_enterprise_detail(ent_id: int) -> dict:
     if not e:
         return {}
     chains = query("""SELECT ic.* FROM industry_chains ic
-        JOIN chain_relations cr ON cr.chain_id=ic.id
-        WHERE cr.enterprise_id=?""", {"id": ent_id})
+        JOIN chain_relations cr ON cr.chain_id=ic.id WHERE cr.enterprise_id=:id""", {"id": ent_id})
     return {**e, "chains": chains}
 
 
 def get_chain_detail(chain_id: int) -> dict:
-    """获取产业链详情"""
+    """获取产业链详情 (含机会点)"""
     c = query_one("SELECT * FROM industry_chains WHERE id=:id", {"id": chain_id})
     if not c:
         return {}
     ents = query("""SELECT e.* FROM enterprises e
-        JOIN chain_relations cr ON cr.enterprise_id=e.id
-        WHERE cr.chain_id=?""", {"id": chain_id})
+        JOIN chain_relations cr ON cr.enterprise_id=e.id WHERE cr.chain_id=:id""", {"id": chain_id})
     invs = query("SELECT * FROM investments WHERE chain_id=:id", {"id": chain_id})
-    impacts = query("SELECT * FROM infrastructure WHERE impact_areas LIKE :id", {"id": f"%{c.get('chain_name','')[:4]}%"})
+    impacts = query("SELECT * FROM infrastructure WHERE impact_areas LIKE :q", {"q": f"%{c.get('chain_name','')[:4]}%"})
     eco = query("SELECT * FROM economic_impact WHERE chain_id=:id", {"id": chain_id})
-    return {
-        **c,
-        "enterprises": ents,
-        "investments": invs,
-        "infrastructure": impacts,
-        "economic_impacts": eco,
-    }
+    opps = query("SELECT * FROM investment_opportunities WHERE chain_id=:id", {"id": chain_id})
+    flows = query("SELECT * FROM city_chain_flows WHERE chain_id=:id", {"id": chain_id})
+    return {**c, "enterprises": ents, "investments": invs, "infrastructure": impacts,
+            "economic_impacts": eco, "opportunities": opps, "city_flows": flows}
 
 
 def search_graph(keyword: str) -> list:
-    """搜索企业/产业链/招商"""
-    results = []
+    """搜索企业/产业链/招商/机会点"""
     kw = f"%{keyword}%"
-    # 企业
-    ents = query("SELECT * FROM enterprises WHERE name LIKE :q OR industry LIKE :q OR description LIKE :q",
-                 {"q": kw})
-    for e in ents:
-        results.append({"type": "enterprise", "id": f"ent_{e['id']}", "name": e['name'], "industry": e['industry']})
-    # 产业链
-    chains = query("SELECT * FROM industry_chains WHERE chain_name LIKE :q OR description LIKE :q",
-                   {"q": kw})
-    for c in chains:
-        results.append({"type": "chain", "id": f"chain_{c['id']}", "name": c['chain_name']})
-    # 招商
-    invs = query("SELECT * FROM investments WHERE enterprise_name LIKE :q OR industry LIKE :q",
-                 {"q": kw})
-    for inv in invs:
-        results.append({"type": "investment", "id": f"inv_{inv['id']}", "name": inv['enterprise_name'], "industry": inv.get('industry','')})
-    # 基建
-    infras = query("SELECT * FROM infrastructure WHERE name LIKE :q OR description LIKE :q",
-                   {"q": kw})
-    for inf in infras:
-        results.append({"type": "infrastructure", "id": f"infra_{inf['id']}", "name": inf['name']})
+    results = []
+    for label, table, id_prefix, name_col in [
+        ("enterprise","enterprises","ent","name"),
+        ("chain","industry_chains","chain","chain_name"),
+        ("investment","investments","inv","enterprise_name"),
+        ("infrastructure","infrastructure","infra","name"),
+        ("opportunity","investment_opportunities","opp","name"),
+    ]:
+        rows = query(f"SELECT id, {name_col} as name FROM {table} WHERE {name_col} LIKE :q", {"q": kw})
+        for r in rows:
+            results.append({"type": label, "id": f"{id_prefix}_{r['id']}", "name": r['name']})
     return results
 
 
 def get_analysis() -> dict:
-    """产业分析 - 缺口/互补/经济影响"""
+    """产业分析 - 缺口/机会/互补/经济影响"""
     chains = query("SELECT * FROM industry_chains")
-    analysis = {"chain_gaps": [], "city_relations": [], "economic_impact": [], "suggestions": []}
+    analysis = {"chain_gaps": [], "city_relations": [], "city_flows": [],
+                "economic_impact": [], "suggestions": [], "opportunities": [],
+                "enterprise_analysis": []}
 
-    # 产业链分析
+    # 产业链综合分析
     for c in chains:
         e_count = query_one("SELECT COUNT(*) as cnt FROM chain_relations WHERE chain_id=:id", {"id": c['id']})['cnt']
         inv_count = query_one("SELECT COUNT(*) as cnt FROM investments WHERE chain_id=:id", {"id": c['id']})['cnt']
+        opp_count = query_one("SELECT COUNT(*) as cnt FROM investment_opportunities WHERE chain_id=:id", {"id": c['id']})['cnt']
         eco = query("SELECT * FROM economic_impact WHERE chain_id=:id ORDER BY year", {"id": c['id']})
+        flows = query("SELECT * FROM city_chain_flows WHERE chain_id=:id", {"id": c['id']})
         analysis["chain_gaps"].append({
-            "chain_name": c['chain_name'],
-            "category": c['category'],
-            "existing_enterprises": e_count,
-            "new_investments": inv_count,
-            "economic_impacts": eco
+            "chain_name": c['chain_name'], "category": c['category'],
+            "existing_enterprises": e_count, "new_investments": inv_count,
+            "opportunities": opp_count, "economic_impacts": eco, "city_flows": flows
         })
 
-    # 缺口建议
+    # 缺口建议 (合并机会点)
+    all_opps = query("""SELECT o.*, ic.chain_name FROM investment_opportunities o
+        JOIN industry_chains ic ON o.chain_id=ic.id ORDER BY o.priority""")
+    analysis["opportunities"] = all_opps
     analysis["suggestions"] = [
-        {"chain": "纺织服装产业链", "gap": "高端面料研发环节薄弱", "suggestion": "引入功能性面料、智能纺织企业"},
-        {"chain": "纺织服装产业链", "gap": "品牌设计环节缺失", "suggestion": "引进服装设计工作室、时尚品牌总部"},
-        {"chain": "陶瓷建材产业链", "gap": "绿色低碳技术不足", "suggestion": "引入碳捕集、固废利用技术企业"},
-        {"chain": "装备制造产业链", "gap": "核心零部件依赖外购", "suggestion": "引入精密零部件、伺服电机等上游企业"},
-        {"chain": "食品饮料产业链", "gap": "冷链物流配套不足", "suggestion": "引入专业化冷链物流企业"},
-        {"chain": "新材料产业链", "gap": "研发成果转化平台缺失", "suggestion": "建中试基地、引入高校科研分支机构"},
-        {"chain": "现代物流产业链", "gap": "临空高附加值加工缺失", "suggestion": "引入航空食品、保税加工等临空产业"},
-        {"chain": "电子信息产业链", "gap": "规模较小、集聚度低", "suggestion": "引入PCB、半导体封装等配套环节"},
+        {"chain": opp['chain_name'], "gap": opp['name'], "suggestion": f"引入{opp['target_enterprises']}, 预计投资{opp['estimated_investment']}",
+         "priority": opp['priority']}
+        for opp in all_opps
     ]
+
+    # 城市产业链上下游
+    analysis["city_flows"] = query("""SELECT ccf.*, ic.chain_name FROM city_chain_flows ccf
+        JOIN industry_chains ic ON ccf.chain_id=ic.id ORDER BY ccf.city, ccf.flow_type""")
 
     # 城市关系
     analysis["city_relations"] = query("SELECT * FROM city_relations")
 
+    # 企业分析: 按产业链和环节统计
+    for c in chains:
+        ents = query("""SELECT e.chain_stage, e.scale, e.revenue_annual, e.employee_count
+            FROM enterprises e JOIN chain_relations cr ON cr.enterprise_id=e.id WHERE cr.chain_id=:id""", {"id": c['id']})
+        total_rev = sum(e.get('revenue_annual',0) or 0 for e in ents)
+        total_emp = sum(e.get('employee_count',0) or 0 for e in ents)
+        stages = {}
+        for e in ents:
+            st = e.get('chain_stage','其他')
+            stages.setdefault(st, {"count":0, "revenue":0, "employees":0})
+            stages[st]["count"] += 1
+            stages[st]["revenue"] += e.get('revenue_annual',0) or 0
+            stages[st]["employees"] += e.get('employee_count',0) or 0
+        analysis["enterprise_analysis"].append({
+            "chain_name": c['chain_name'], "total_enterprises": len(ents),
+            "total_revenue": round(total_rev, 1), "total_employees": total_emp,
+            "stage_distribution": [{"stage": k, **v} for k, v in stages.items()]
+        })
+
     # 经济影响汇总
-    for year in [2025, 2030]:
+    for year in [2025, 2027, 2030]:
         rows = query("SELECT SUM(output_value) as total_output, SUM(employment) as total_emp, SUM(gdp_contribution) as total_gdp FROM economic_impact WHERE year=:id", {"id": year})
         if rows:
             analysis["economic_impact"].append({"year": year, **rows[0]})

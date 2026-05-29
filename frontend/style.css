@@ -42,6 +42,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .sr-tag.chain { background:#E8A838; color:#fff; }
 .sr-tag.inv { background:#E85A5A; color:#fff; }
 .sr-tag.infra { background:#7BC47F; color:#fff; }
+.sr-tag.opp { background:#E67E22; color:#fff; }
 
 #toolbar-btns { display: flex; gap: 8px; margin-left: auto; }
 .tb-btn {
