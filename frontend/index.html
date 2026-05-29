@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高明区产业链知识图谱</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="header">
+  <h1>🏭 高明区产业链知识图谱</h1>
+  <div id="header-stats">
+    <span class="stat"><span class="stat-num" id="stat-ent">0</span> 家企业</span>
+    <span class="stat"><span class="stat-num" id="stat-chain">0</span> 条产业链</span>
+    <span class="stat"><span class="stat-num" id="stat-inv">0</span> 招商项目</span>
+    <span class="stat"><span class="stat-num" id="stat-infra">0</span> 基建</span>
+  </div>
+</div>
+
+<div id="toolbar">
+  <div id="search-box">
+    <input type="text" id="search-input" placeholder="搜索企业 / 产业链 / 项目..." />
+    <div id="search-results"></div>
+  </div>
+  <div id="toolbar-btns">
+    <button class="tb-btn" onclick="resetView()">🔄 重置视图</button>
+    <button class="tb-btn" onclick="showAnalysis()">📊 产业分析</button>
+    <button class="tb-btn" onclick="exportImage()">📷 导出图片</button>
+  </div>
+</div>
+
+<div id="main">
+  <div id="graph-container">
+    <svg id="graph-svg"></svg>
+    <div id="tooltip"></div>
+  </div>
+  <div id="detail-panel" class="hidden">
+    <button id="panel-close" onclick="closePanel()">✕</button>
+    <div id="panel-content"></div>
+  </div>
+</div>
+
+<div id="legend">
+  <div class="lg-item"><span class="lg-dot" style="background:#4A90D9"></span>现有企业</div>
+  <div class="lg-item"><span class="lg-dot" style="background:#E8A838"></span>产业链</div>
+  <div class="lg-item"><span class="lg-dot" style="background:#E85A5A"></span>招商项目</div>
+  <div class="lg-item"><span class="lg-dot" style="background:#7BC47F"></span>基础设施</div>
+  <div class="lg-item"><span class="lg-dot" style="background:#9B59B6"></span>周边城市</div>
+</div>
+
+<div id="modal-overlay" class="hidden" onclick="closeModal()"></div>
+<div id="modal" class="hidden">
+  <button id="modal-close" onclick="closeModal()">✕</button>
+  <div id="modal-content"></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
