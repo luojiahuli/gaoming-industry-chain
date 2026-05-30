@@ -174,6 +174,8 @@ def build_graph() -> nx.DiGraph:
                    estimated_investment=op.get('estimated_investment',''),
                    priority=op.get('priority','中'),
                    target_enterprises=op.get('target_enterprises',''),
+                   partner_enterprises=op.get('partner_enterprises',''),
+                   partner_cities=op.get('partner_cities',''),
                    description=op.get('description',''),
                    label=op['name'][:15]+'…', title=f"[机会] {op['name']}",
                    size=28, color=node_color)
@@ -182,6 +184,52 @@ def build_graph() -> nx.DiGraph:
             G.add_edge(op_id, chain_map[op['chain_id']], type="opportunity_in",
                        label=f"{op.get('estimated_investment','')}",
                        weight=1, color="#F39C12")
+
+        # 机会→建议引入合作企业 (在图谱中查找同名节点)
+        partner_ents = op.get('partner_enterprises', '')
+        if partner_ents:
+            try:
+                partner_list = json.loads(partner_ents) if isinstance(partner_ents, str) else partner_ents
+                for pname in partner_list:
+                    # 尝试匹配企业节点
+                    found = False
+                    for n in G.nodes():
+                        node_data = G.nodes[n]
+                        if node_data.get('type') in ('enterprise', 'investment', 'infrastructure'):
+                            # 检查节点标签或名称是否包含合作企业关键词
+                            node_name = node_data.get('name', '') or node_data.get('label', '')
+                            # 提取企业核心名称（去掉括号说明）
+                            core = pname.split('（')[0].split('(')[0].strip()
+                            if core and len(core) >= 2 and core in node_name:
+                                G.add_edge(op_id, n, type="partner_intro",
+                                          label="引入合作", weight=0.8, color="#2ECC71")
+                                found = True
+                                break
+                    if not found:
+                        # 未匹配到图谱内节点，添加虚拟合作节点
+                        virtual_id = f"partner_{op['id']}_{hash(pname) % 10000}"
+                        G.add_node(virtual_id, type="virtual_partner",
+                                  name=pname, label=pname[:12]+'…' if len(pname) > 12 else pname,
+                                  size=15, color="#2ECC71", opacity=0.6)
+                        G.add_edge(op_id, virtual_id, type="partner_intro",
+                                  label="引入合作", weight=0.5, color="#2ECC71")
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+        # 机会→合作城市
+        partner_cities = op.get('partner_cities', '')
+        if partner_cities:
+            try:
+                city_list = json.loads(partner_cities) if isinstance(partner_cities, str) else partner_cities
+                for pcity in city_list:
+                    # 提取城市名（去掉括号说明）
+                    city_name = pcity.split('（')[0].split('(')[0].strip()
+                    city_node_id = f"city_{city_name}"
+                    if city_node_id in G:
+                        G.add_edge(op_id, city_node_id, type="city_coop",
+                                  label="城市合作", weight=0.8, color="#3498DB")
+            except (json.JSONDecodeError, TypeError):
+                pass
 
     # ── 9. 产业链间关联 (上下游价值链) ────────────────
     chain_deps = [

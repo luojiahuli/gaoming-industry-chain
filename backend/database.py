@@ -112,6 +112,8 @@ def init_db():
             priority TEXT DEFAULT '中',
             description TEXT,
             target_enterprises TEXT,
+            partner_enterprises TEXT,  -- JSON: 建议引入/合作的企业名称列表
+            partner_cities TEXT,       -- JSON: 可合作的城市/产业集群
             FOREIGN KEY (chain_id) REFERENCES industry_chains(id)
         );
         """)

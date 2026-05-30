@@ -12,6 +12,7 @@ const COLORS = {
   infrastructure: "#7BC47F",
   city: "#9B59B6",
   opportunity: "#E67E22",
+  virtual_partner: "#2ECC71",
 };
 
 const TYPE_LABELS = {
@@ -21,6 +22,7 @@ const TYPE_LABELS = {
   infrastructure: "基础设施",
   city: "周边城市",
   opportunity: "招商机会",
+  virtual_partner: "建议引入",
 };
 
 const GAP_TYPE_COLORS = {
@@ -106,10 +108,11 @@ function renderGraph() {
     .attr("stroke", (d) => d.color || "#2a3a4a")
     .attr("stroke-width", (d) => (d.weight || 1) * 1.5)
     .attr("stroke-opacity", 0.4)
-    .attr("stroke-dasharray", (d) => d.type === "city_relation" ? "4,3" : "none");
+    .attr("stroke-dasharray", (d) => d.type === "city_relation" || d.type === "partner_intro" || d.type === "city_coop" ? "5,3" : "none");
 
-  // 边标签
-  const linkLabel = g.selectAll(".edge-label").data(edges.filter(d => d.label)).join("text")
+  // 边标签 (只显示主要关系类型，不显示大量合作边标签以免杂乱)
+  const labelTypes = ["supply_chain","chain_link","city_chain_flow","competition","investment_in","opportunity_in"];
+  const linkLabel = g.selectAll(".edge-label").data(edges.filter(d => d.label && labelTypes.includes(d.type))).join("text")
     .attr("class", "edge-label")
     .text(d => d.label)
     .attr("font-size", 9)
@@ -273,6 +276,26 @@ async function nodeClick(e, d) {
     renderCityDetail(d);
   } else if (d.type === "opportunity") {
     renderOpportunityDetail(d);
+  } else if (d.type === "virtual_partner") {
+    // 虚拟合作节点 - 显示相关机会点
+    const connected = graphData.edges.filter(e =>
+      (e.source.id || e.source) === d.id || (e.target.id || e.target) === d.id
+    ).map(e => {
+      const sid = e.source.id || e.source;
+      const tid = e.target.id || e.target;
+      return sid === d.id ? tid : sid;
+    });
+    const el = document.getElementById("panel-content");
+    el.innerHTML = `
+      <div class="dp-header">
+        <span class="dp-type" style="background:#2ECC7122;color:#2ECC71;border:1px solid #2ECC7155;">建议引入</span>
+        <div class="dp-title">${d.name}</div>
+        <div class="dp-sub">该企业为建议引入的合作伙伴，尚未在高明落地</div>
+      </div>
+      <div class="dp-section">
+        <h3>关联机会</h3>
+        <p style="font-size:13px;color:#bbb;">已关联 ${connected.length} 个招商机会点，在图谱中查看详情</p>
+      </div>`;
   }
 }
 
@@ -421,6 +444,18 @@ function renderOpportunityDetail(d) {
     gapType === '技术缺口' ? 'gap-tech' :
     gapType === '上游缺口' ? 'gap-upstream' : 'gap-downstream';
   const el = document.getElementById("panel-content");
+
+  // 解析 partner_enterprises 和 partner_cities
+  let partnerEnts = [], partnerCities = [];
+  try { partnerEnts = JSON.parse(d.partner_enterprises || '[]'); } catch(e) {}
+  try { partnerCities = JSON.parse(d.partner_cities || '[]'); } catch(e) {}
+
+  // 生成合作企业HTML（可点击跳转）
+  function makePartnerItem(name) {
+    const safe = name.replace(/['"]/g, '');
+    return `<span class="partner-link" onclick="focusPartnerNode('${safe}')" style="color:#2ECC71;cursor:pointer;text-decoration:underline;display:inline-block;margin:2px 0;">🏢 ${name}</span>`;
+  }
+
   el.innerHTML = `
     <div class="dp-header">
       <span class="dp-type ${gapCssClass}">${gapLabel}</span>
@@ -439,7 +474,22 @@ function renderOpportunityDetail(d) {
     <div class="dp-section">
       <h3>目标企业</h3>
       <p style="font-size:13px;color:#bbb;">${d.target_enterprises || '-'}</p>
-    </div>`;
+    </div>
+    ${partnerEnts.length ? `
+    <div class="dp-section">
+      <h3>🤝 建议引入/合作企业</h3>
+      <div style="font-size:13px;color:#bbb;line-height:1.8;">
+        ${partnerEnts.map(name => makePartnerItem(name)).join('<br>')}
+      </div>
+      <p style="font-size:11px;color:#667;margin-top:6px;">💡 点击企业名称可在图谱中定位</p>
+    </div>` : ''}
+    ${partnerCities.length ? `
+    <div class="dp-section">
+      <h3>🏙️ 建议合作城市/区域</h3>
+      <ul class="dp-list">
+        ${partnerCities.map(c => `<li style="color:#3498DB;">${c}</li>`).join('')}
+      </ul>
+    </div>` : ''}`;
 }
 
 function closePanel() {
@@ -619,6 +669,26 @@ window.addEventListener("resize", () => {
   svg.attr("width", w).attr("height", h);
   if (simulation) simulation.force("center", d3.forceCenter(w / 2, h / 2)).alpha(0.3).restart();
 });
+
+// ── 合作企业跳转 ─────────────────────────────────────────
+function focusPartnerNode(name) {
+  if (!graphData) return;
+  // 提取核心名称（去掉括号说明）
+  const core = name.split('（')[0].split('(')[0].trim();
+  // 在图谱节点中查找包含该名称的节点
+  const candidates = graphData.nodes.filter(n => {
+    const nname = n.name || n.label || '';
+    return n.type !== 'virtual_partner' && (nname.includes(core) || core.includes(nname));
+  });
+  if (candidates.length > 0) {
+    focusNode(candidates[0].id);
+  } else {
+    // 未找到，显示提示
+    const panel = document.getElementById("detail-panel");
+    const content = document.getElementById("panel-content");
+    content.innerHTML += `<p style="color:#E67E22;font-size:12px;margin-top:8px;">⚠️ "${core}" 尚未在本图谱中建立节点，建议在图谱外另行调研</p>`;
+  }
+}
 
 // ── 热门行业筛选 ─────────────────────────────────────────
 async function loadHotIndustries() {
