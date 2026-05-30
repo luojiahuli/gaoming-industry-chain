@@ -248,9 +248,49 @@ async function nodeClick(e, d) {
   const content = document.getElementById("panel-content");
   panel.classList.remove("hidden");
 
-  // 高亮
-  g.selectAll(".node-group circle").attr("opacity", 0.3);
+  // 高亮 - 重置所有边和节点
+  g.selectAll(".node-group circle").attr("opacity", 0.3).attr("stroke", "#1a2a3a").attr("stroke-width", 2);
+  g.selectAll("line").attr("stroke-opacity", 0.1);
+  // 高亮自身
   g.selectAll(`.node-group`).filter((n) => n.id === d.id).select("circle").attr("opacity", 1);
+
+  // 机会点 → 高亮关联的产业链节点 + 合作边
+  if (d.type === "opportunity") {
+    graphData.edges.forEach(e => {
+      const sid = e.source.id || e.source;
+      const tid = e.target.id || e.target;
+      // 高亮机会点→产业链的边和节点
+      if (e.type === "opportunity_in" && (sid === d.id || tid === d.id)) {
+        const chainId = sid === d.id ? tid : sid;
+        g.selectAll(`.node-group`).filter((n) => n.id === chainId).select("circle")
+          .attr("opacity", 1).attr("stroke", "#FFD700").attr("stroke-width", 3);
+      }
+      // 高亮合作边 (引入合作 / 城市合作)
+      if ((e.type === "partner_intro" || e.type === "city_coop") && (sid === d.id || tid === d.id)) {
+        g.selectAll("line").filter((l) => (l.source.id||l.source) === sid && (l.target.id||l.target) === tid)
+          .attr("stroke-opacity", 0.9);
+      }
+    });
+  }
+
+  // 产业链节点 → 高亮其所有机会点
+  if (d.type === "chain") {
+    graphData.edges.forEach(e => {
+      const sid = e.source.id || e.source;
+      const tid = e.target.id || e.target;
+      if (e.type === "opportunity_in" && (sid === d.id || tid === d.id)) {
+        const oppId = sid === d.id ? tid : sid;
+        g.selectAll(`.node-group`).filter((n) => n.id === oppId).select("circle")
+          .attr("opacity", 1).attr("stroke", "#FFD700").attr("stroke-width", 3);
+        // 也高亮该机会点的合作边
+        g.selectAll("line").filter((l) => {
+          const ls = l.source.id || l.source;
+          const lt = l.target.id || l.target;
+          return (l.type === "partner_intro" || l.type === "city_coop") && (ls === oppId || lt === oppId);
+        }).attr("stroke-opacity", 0.9);
+      }
+    });
+  }
 
   if (d.type === "enterprise") {
     try {
