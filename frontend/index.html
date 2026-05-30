@@ -24,6 +24,12 @@
     <input type="text" id="search-input" placeholder="搜索企业 / 产业链 / 项目..." />
     <div id="search-results"></div>
   </div>
+  <div id="filter-box">
+    <select id="hot-filter" onchange="onHotFilterChange()">
+      <option value="">🔥 热门行业筛选</option>
+    </select>
+    <span id="filter-count" class="filter-count hidden"></span>
+  </div>
   <div id="toolbar-btns">
     <button class="tb-btn" onclick="resetView()">🔄 重置视图</button>
     <button class="tb-btn" onclick="showAnalysis()">📊 产业分析</button>
@@ -49,6 +55,13 @@
   <div class="lg-item"><span class="lg-dot" style="background:#7BC47F"></span>基础设施</div>
   <div class="lg-item"><span class="lg-dot" style="background:#9B59B6"></span>周边城市</div>
   <div class="lg-item"><span class="lg-dot" style="background:#E67E22"></span>招商机会</div>
+  <div class="lg-item gap-legend hidden" id="legend-gaps">
+    <span style="font-size:11px;color:#8899aa;margin-top:4px;display:block;">━━ 产业链缺口 ━━</span>
+    <div><span class="lg-dot" style="background:#E74C3C"></span>供应链缺口</div>
+    <div><span class="lg-dot" style="background:#8E44AD"></span>技术缺口</div>
+    <div><span class="lg-dot" style="background:#3498DB"></span>上游缺口</div>
+    <div><span class="lg-dot" style="background:#1ABC9C"></span>下游缺口</div>
+  </div>
 </div>
 
 <div id="modal-overlay" class="hidden" onclick="closeModal()"></div>

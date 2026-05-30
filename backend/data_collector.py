@@ -76,6 +76,12 @@ GAOMING_ENTERPRISES = [
 
     # ── 智能家居 ──
     {"name":"甜秘密高端智能家居生产基地（高明）","industry":"智能家居","sub_industry":"智能家居制造","chain_stage":"中游","scale":"中型","revenue_annual":10,"employee_count":1500,"address":"高明区更合镇","source":"2026年签约二期"},
+    {"name":"圃美多（佛山）食品有限公司","industry":"食品饮料","sub_industry":"豆制品/健康食品","chain_stage":"中游","scale":"中型","revenue_annual":8,"employee_count":500,"address":"高明区杨和镇","source":"2026年签约"},
+    {"name":"高咖（广东）农业科技发展有限公司","industry":"食品饮料","sub_industry":"咖啡生豆加工","chain_stage":"上游","scale":"小型","revenue_annual":3,"employee_count":200,"address":"高明区荷城","source":"2026年投产"},
+    {"name":"浙天智能家居生产制造总部基地","industry":"智能家居","sub_industry":"智能安防锁具","chain_stage":"中游","scale":"中型","revenue_annual":5,"employee_count":600,"address":"高明区更合镇","source":"2026年签约"},
+    {"name":"沛国智慧健康办公装备制造项目","industry":"智能家居","sub_industry":"智能升降办公桌","chain_stage":"中游","scale":"中型","revenue_annual":4,"employee_count":400,"address":"高明区更合镇","source":"2026年签约"},
+    {"name":"金通佰利智能家具工业4.0生产基地","industry":"智能家居","sub_industry":"高端定制家具","chain_stage":"中游","scale":"中型","revenue_annual":3,"employee_count":300,"address":"高明区更合镇","source":"2026年签约"},
+    {"name":"深国际·高明先进制造与空港供应链中心","industry":"现代物流","sub_industry":"空港供应链","chain_stage":"下游","scale":"大型","revenue_annual":12,"employee_count":800,"address":"高明区更合镇","source":"2026年签约"},
 ]
 
 # ═══════════════════════════════════════════════════════════
@@ -198,6 +204,13 @@ INVESTMENTS = [
     {"enterprise_name":"广州无线电集团(高明)智能制造基地","industry":"电子信息","chain_id":7,"amount":8,"stage":"在建","source":"佛山市招商","announced_date":"2025-07","description":"工业物联网智能制造基地"},
     {"enterprise_name":"润泽（佛山）国际信息港（一期）","industry":"电子信息","chain_id":7,"amount":20,"stage":"已投产","source":"高明区招商局","announced_date":"2023-06","description":"大湾区重要算力基础设施"},
     {"enterprise_name":"南网战新（佛山）新动能产业基地","industry":"电力装备","chain_id":9,"amount":15,"stage":"已签约","source":"2026年高质量发展大会","announced_date":"2026-03","description":"新型电力系统装备基地，南网战新基金5亿元配套"},
+    {"enterprise_name":"圃美多豆制品智能生产基地","industry":"食品饮料","chain_id":4,"amount":3,"stage":"已签约","source":"2026年招商","announced_date":"2026-04","description":"全球豆制品龙头圃美多落户高明杨和镇，长期供应山姆会员店，年产值超8亿元"},
+    {"enterprise_name":"咖啡生豆保税仓","industry":"食品饮料","chain_id":4,"amount":2,"stage":"已投产","source":"高明区招商局","announced_date":"2026-05","description":"高咖农业在老挝建立咖啡种植基地，开展保税仓储、精深加工和国际贸易"},
+    {"enterprise_name":"深国际·高明先进制造与空港供应链中心","industry":"现代物流","chain_id":6,"amount":12,"stage":"已签约","source":"高明区招商局","announced_date":"2026-03","description":"深国际集团布局空港供应链中心，服务临空经济"},
+    {"enterprise_name":"浙天智能家居生产制造总部基地","industry":"智能家居","chain_id":8,"amount":1,"stage":"已签约","source":"高明区招商局","announced_date":"2026-03","description":"东莞市浙天装饰材料有限公司投建，聚焦智能安防锁具全产业链"},
+    {"enterprise_name":"甜秘密高端智能家居生产基地（二期）","industry":"智能家居","chain_id":8,"amount":10,"stage":"已签约","source":"高明区高质量发展大会","announced_date":"2026-02","description":"甜秘密二次增资扩产，累计投资23亿元，产品畅销全球130多个国家"},
+    {"enterprise_name":"沛国智慧健康办公装备制造项目","industry":"智能家居","chain_id":8,"amount":2,"stage":"已签约","source":"高明区招商局","announced_date":"2026-01","description":"智能电控升降办公桌年产能超20万套，出口占比80%"},
+    {"enterprise_name":"高明独立储能电站项目","industry":"电力装备","chain_id":9,"amount":15,"stage":"已投产","source":"佛山市重点建设项目","announced_date":"2025-07","description":"佛山首座220kV新型储能电站，规模208MW/416MWh，大湾区城市超级充电宝"},
 ]
 
 # ═══════════════════════════════════════════════════════════
@@ -331,126 +344,195 @@ CITY_CHAIN_FLOWS = [
 # 招商引资机会点 (产业链缺口分析)
 # ═══════════════════════════════════════════════════════════
 INVESTMENT_OPPORTUNITIES = [
-    {
-        "chain_id":1,"name":"功能性面料研发生产基地","category":"技术升级",
-        "estimated_investment":"5-10亿","priority":"高",
-        "description":"引入具有防水、阻燃、抗菌等功能性面料研发生产能力的企业，补强纺织上游环节",
-        "target_enterprises":"佛山 local 纺织科技企业、上海/浙江功能性面料企业"
-    },
-    {
-        "chain_id":1,"name":"服装品牌总部/设计中心","category":"品牌打造",
-        "estimated_investment":"2-5亿","priority":"中",
-        "description":"引进知名服装品牌区域总部或独立设计师工作室，补强品牌设计下游环节",
-        "target_enterprises":"广州/深圳服装设计师品牌、电商服装品牌"
-    },
-    {
-        "chain_id":1,"name":"纺织工业互联网平台","category":"数字化转型",
-        "estimated_investment":"1-3亿","priority":"中",
-        "description":"建设纺织行业工业互联网平台，实现溢达等龙头企业的数字化赋能和产能共享",
-        "target_enterprises":"工业互联网平台企业(树根互联/腾讯云等)"
-    },
-    {
-        "chain_id":2,"name":"陶瓷固废循环利用项目","category":"绿色环保",
-        "estimated_investment":"3-8亿","priority":"高",
-        "description":"建设陶瓷废渣资源化利用生产线，解决陶瓷产业固废问题，年处理能力50万吨",
-        "target_enterprises":"固废处理环保企业(东江环保/格林美等)"
-    },
-    {
-        "chain_id":2,"name":"陶瓷智能化装备制造","category":"技术升级",
-        "estimated_investment":"5-10亿","priority":"高",
-        "description":"引入陶瓷智能喷墨打印、智能检测分选等装备制造企业，提升陶瓷产业自动化水平",
-        "target_enterprises":"陶瓷装备企业(科达制造/力泰等)"
-    },
-    {
-        "chain_id":3,"name":"精密伺服电机/减速器制造","category":"核心部件",
-        "estimated_investment":"8-15亿","priority":"高",
-        "description":"引进精密伺服电机、RV减速器等工业机器人核心部件生产企业，补强装备制造上游",
-        "target_enterprises":"汇川技术/绿的谐波等核心部件企业"
-    },
-    {
-        "chain_id":3,"name":"工业机器人本体制造基地","category":"整机制造",
-        "estimated_investment":"10-20亿","priority":"高",
-        "description":"建设工业机器人本体制造基地，利用高明成本优势和交通优势服务大湾区制造业",
-        "target_enterprises":"埃斯顿/新松机器人/佛山隆深等"
-    },
-    {
-        "chain_id":3,"name":"新能源汽车零部件产业园","category":"新能源",
-        "estimated_investment":"20-50亿","priority":"高",
-        "description":"规划新能源汽车零部件专业园区，承接比亚迪配套企业及上下游，依托佛山西部汽车产业走廊",
-        "target_enterprises":"比亚迪供应链企业/宁德时代配套/佛吉亚等Tier1"
-    },
-    {
-        "chain_id":4,"name":"冷链物流与中央厨房基地","category":"配套升级",
-        "estimated_investment":"5-10亿","priority":"高",
-        "description":"建设服务于食品饮料产业的冷链物流中心和中央厨房基地，完善食品产业链冷链环节",
-        "target_enterprises":"冷链物流企业(郑明物流/鲜易等)/团餐企业"
-    },
-    {
-        "chain_id":4,"name":"食品包装新材料研发基地","category":"配套升级",
-        "estimated_investment":"2-5亿","priority":"中",
-        "description":"引入可降解食品包装材料研发生产基地，服务海天等龙头企业包装需求",
-        "target_enterprises":"食品包装企业(紫江企业/永新股份等)"
-    },
-    {
-        "chain_id":5,"name":"氢燃料电池核心部件制造","category":"前沿技术",
-        "estimated_investment":"10-20亿","priority":"高",
-        "description":"引进质子交换膜、催化剂等氢燃料电池核心部件制造商，与仙湖实验室形成产研协同",
-        "target_enterprises":"氢燃料电池企业(国鸿氢能/亿华通/上海重塑等)"
-    },
-    {
-        "chain_id":5,"name":"碳纤维复合材料生产基地","category":"新材料",
-        "estimated_investment":"15-30亿","priority":"中",
-        "description":"建设高性能碳纤维复合材料生产基地，应用于航空航天(依托新机场)、汽车轻量化等领域",
-        "target_enterprises":"碳纤维企业(光威复材/中复神鹰等)"
-    },
-    {
-        "chain_id":6,"name":"航空食品加工基地","category":"临空经济",
-        "estimated_investment":"3-8亿","priority":"高",
-        "description":"依托广州新机场建设航空食品加工基地，为航线提供配餐服务，同时发展预制菜产业",
-        "target_enterprises":"航空食品企业(中翼航空食品/汉莎天厨等)"
-    },
-    {
-        "chain_id":6,"name":"跨境电商保税仓+分拨中心","category":"临空经济",
-        "estimated_investment":"5-15亿","priority":"高",
-        "description":"建设跨境电商保税仓储和全球分拨中心，利用新机场货运能力和综保区政策优势",
-        "target_enterprises":"跨境电商平台(SHEIN/Temu/速卖通等)仓储物流服务商"
-    },
-    {
-        "chain_id":6,"name":"临空高端制造园(航空修造)","category":"临空经济",
-        "estimated_investment":"20-50亿","priority":"中",
-        "description":"规划临空高端制造园区，聚焦航空零部件制造、飞机维修等航空修造产业",
-        "target_enterprises":"航空制造企业(中航工业供应链企业等)"
-    },
-    {
-        "chain_id":7,"name":"半导体封装测试基地","category":"核心产业",
-        "estimated_investment":"30-50亿","priority":"中",
-        "description":"引进半导体封装测试产线，服务大湾区半导体设计企业，差异化定位先进封装",
-        "target_enterprises":"封测企业(长电科技/通富微电/华天科技等)"
-    },
-    {
-        "chain_id":7,"name":"AI算力应用产业基地","category":"数字经济",
-        "estimated_investment":"5-15亿","priority":"高",
-        "description":"围绕润泽智算中心建设AI应用产业基地，吸引AI大模型训练、推理应用企业入驻",
-        "target_enterprises":"AI企业(商汤/旷视/科大讯飞等)/云计算企业"
-    },
-    {
-        "chain_id":8,"name":"智能家居物联网平台","category":"技术升级",
-        "estimated_investment":"2-8亿","priority":"中",
-        "description":"引进智能家居物联网平台企业，实现高明智能家居产品的互联互通和生态构建",
-        "target_enterprises":"物联网平台企业(小米生态链/华为鸿蒙等)"
-    },
-    {
-        "chain_id":9,"name":"新型储能电池系统集成","category":"新能源",
-        "estimated_investment":"10-25亿","priority":"高",
-        "description":"引进新型储能电池系统集成企业，服务于南方电网新型电力系统建设需求",
-        "target_enterprises":"储能企业(宁德时代储能/比亚迪储能/阳光电源等)"
-    },
-    {
-        "chain_id":9,"name":"智能电网设备制造基地","category":"电力装备",
-        "estimated_investment":"10-20亿","priority":"高",
-        "description":"建设智能电网设备(智能电表/配电自动化/变电站)制造基地，配套南方电网采购需求",
-        "target_enterprises":"电力设备企业(许继电气/国电南瑞/四方股份等)"
-    },
+    # ═══ 纺织服装产业链 (chain_id=1) ═══
+    {"chain_id":1,"name":"功能性面料研发生产基地","category":"技术升级","gap_type":"技术缺口",
+     "estimated_investment":"5-10亿","priority":"高",
+     "description":"引入具有防水、阻燃、抗菌等功能性面料研发生产能力的企业，补强纺织上游环节",
+     "target_enterprises":"佛山本地纺织科技企业、上海/浙江功能性面料企业"},
+    {"chain_id":1,"name":"服装品牌总部/设计中心","category":"品牌打造","gap_type":"下游缺口",
+     "estimated_investment":"2-5亿","priority":"中",
+     "description":"引进知名服装品牌区域总部或独立设计师工作室，补强品牌设计下游环节",
+     "target_enterprises":"广州/深圳服装设计师品牌、电商服装品牌"},
+    {"chain_id":1,"name":"纺织工业互联网平台","category":"数字化转型","gap_type":"技术缺口",
+     "estimated_investment":"1-3亿","priority":"中",
+     "description":"建设纺织行业工业互联网平台，实现溢达等龙头企业的数字化赋能和产能共享",
+     "target_enterprises":"工业互联网平台企业(树根互联/腾讯云等)"},
+    {"chain_id":1,"name":"航空内饰/产业用纺织品生产基地","category":"高端纺织","gap_type":"上游缺口",
+     "estimated_investment":"5-10亿","priority":"高",
+     "description":"引入航空座椅面料、汽车内饰织物等高附加值产业用纺织品产线，填补临空经济高端纺织空白",
+     "target_enterprises":"航空纺织品企业(吉兴汽车内饰/申达股份等)"},
+    {"chain_id":1,"name":"纺织印染废水循环利用中心","category":"绿色环保","gap_type":"供应链缺口",
+     "estimated_investment":"2-5亿","priority":"中",
+     "description":"建设纺织印染废水集中处理与循环利用设施，解决合丰纺织等企业环保压力",
+     "target_enterprises":"工业水处理企业(金科环境/博天环境等)"},
+
+    # ═══ 陶瓷建材产业链 (chain_id=2) ═══
+    {"chain_id":2,"name":"陶瓷固废循环利用项目","category":"绿色环保","gap_type":"供应链缺口",
+     "estimated_investment":"3-8亿","priority":"高",
+     "description":"建设陶瓷废渣资源化利用生产线，解决陶瓷产业固废问题，年处理能力50万吨",
+     "target_enterprises":"固废处理环保企业(东江环保/格林美等)"},
+    {"chain_id":2,"name":"陶瓷智能化装备制造","category":"技术升级","gap_type":"技术缺口",
+     "estimated_investment":"5-10亿","priority":"高",
+     "description":"引入陶瓷智能喷墨打印、智能检测分选等装备制造企业，提升陶瓷产业自动化水平",
+     "target_enterprises":"陶瓷装备企业(科达制造/力泰等)"},
+    {"chain_id":2,"name":"高端工业陶瓷/电子陶瓷生产基地","category":"新材料","gap_type":"上游缺口",
+     "estimated_investment":"10-20亿","priority":"高",
+     "description":"引入氧化铝陶瓷、氮化硅陶瓷等工业陶瓷企业，推动高明陶瓷从建筑陶瓷向电子陶瓷/半导体陶瓷转型",
+     "target_enterprises":"工业陶瓷企业(三环集团/国瓷材料/东方锆业等)"},
+    {"chain_id":2,"name":"陶瓷品牌设计运营中心","category":"品牌打造","gap_type":"下游缺口",
+     "estimated_investment":"1-3亿","priority":"中",
+     "description":"引进陶瓷品牌设计、营销运营机构，推动高明陶瓷从OEM代工向自主品牌转型",
+     "target_enterprises":"品牌策划公司、陶瓷电商运营企业"},
+    {"chain_id":2,"name":"陶瓷窑炉氢能/电能替代技改","category":"绿色能源","gap_type":"技术缺口",
+     "estimated_investment":"5-10亿","priority":"中",
+     "description":"推进陶瓷窑炉从天然气向氢能/电能转型，降低天然气价格波动风险，实现绿色生产",
+     "target_enterprises":"工业窑炉节能改造企业、氢能燃烧技术企业"},
+
+    # ═══ 装备制造/新型电力系统 (chain_id=3) ═══
+    {"chain_id":3,"name":"精密伺服电机/减速器制造","category":"核心部件","gap_type":"供应链缺口",
+     "estimated_investment":"8-15亿","priority":"高",
+     "description":"引进精密伺服电机、RV减速器等工业机器人核心部件生产企业，补强装备制造上游",
+     "target_enterprises":"汇川技术/绿的谐波等核心部件企业"},
+    {"chain_id":3,"name":"工业机器人本体制造基地","category":"整机制造","gap_type":"上游缺口",
+     "estimated_investment":"10-20亿","priority":"高",
+     "description":"建设工业机器人本体制造基地，利用高明成本优势和交通优势服务大湾区制造业",
+     "target_enterprises":"埃斯顿/新松机器人/佛山隆深等"},
+    {"chain_id":3,"name":"新能源汽车零部件产业园","category":"新能源","gap_type":"下游缺口",
+     "estimated_investment":"20-50亿","priority":"高",
+     "description":"规划新能源汽车零部件专业园区，承接比亚迪配套企业及上下游，依托佛山西部汽车产业走廊",
+     "target_enterprises":"比亚迪供应链企业/宁德时代配套/佛吉亚等Tier1"},
+    {"chain_id":3,"name":"CNC数控系统研发制造基地","category":"核心部件","gap_type":"技术缺口",
+     "estimated_investment":"5-15亿","priority":"中",
+     "description":"引进高档数控系统研发制造企业，补齐大湾区高端CNC数控系统短板",
+     "target_enterprises":"华中数控/广州数控/科德数控等"},
+    {"chain_id":3,"name":"航空装备零部件制造基地","category":"临空制造","gap_type":"上游缺口",
+     "estimated_investment":"10-30亿","priority":"高",
+     "description":"依托广州新机场建设航空零部件制造基地，发展飞机结构件、起落架等航空精密制造",
+     "target_enterprises":"中航工业供应链企业/南山铝业航材等"},
+
+    # ═══ 食品饮料产业链 (chain_id=4) ═══
+    {"chain_id":4,"name":"冷链物流与中央厨房基地","category":"配套升级","gap_type":"供应链缺口",
+     "estimated_investment":"5-10亿","priority":"高",
+     "description":"建设服务于食品饮料产业的冷链物流中心和中央厨房基地，完善食品产业链冷链环节",
+     "target_enterprises":"冷链物流企业(郑明物流/鲜易等)/团餐企业"},
+    {"chain_id":4,"name":"食品包装新材料研发基地","category":"配套升级","gap_type":"技术缺口",
+     "estimated_investment":"2-5亿","priority":"中",
+     "description":"引入可降解食品包装材料研发生产基地，服务海天等龙头企业包装需求",
+     "target_enterprises":"食品包装企业(紫江企业/永新股份等)"},
+    {"chain_id":4,"name":"功能性食品研发中心","category":"食品科技","gap_type":"技术缺口",
+     "estimated_investment":"2-5亿","priority":"中",
+     "description":"建设功能性食品、精准营养食品研发中心，推动食品产业由调味品向大健康食品延伸",
+     "target_enterprises":"功能食品企业(汤臣倍健/仙乐健康等)/高校食品研究院"},
+    {"chain_id":4,"name":"咖啡精深加工产业园","category":"新业态","gap_type":"下游缺口",
+     "estimated_investment":"5-10亿","priority":"中",
+     "description":"围绕已落户的咖啡生豆保税仓，延伸咖啡烘焙、冷萃液、冻干粉等精深加工产业链",
+     "target_enterprises":"咖啡加工企业(三顿半/永璞咖啡/瑞幸供应链等)"},
+    {"chain_id":4,"name":"农产品冷链仓储集配中心","category":"配套升级","gap_type":"供应链缺口",
+     "estimated_investment":"3-8亿","priority":"高",
+     "description":"建设合水粉葛、三洲黑鹅等地理标志农产品冷链仓储和集配中心，支撑2252工程",
+     "target_enterprises":"农产品冷链物流企业/供销社系统"},
+
+    # ═══ 新材料/氢能产业链 (chain_id=5) ═══
+    {"chain_id":5,"name":"氢燃料电池核心部件制造","category":"前沿技术","gap_type":"技术缺口",
+     "estimated_investment":"10-20亿","priority":"高",
+     "description":"引进质子交换膜、催化剂等氢燃料电池核心部件制造商，与仙湖实验室形成产研协同",
+     "target_enterprises":"氢燃料电池企业(国鸿氢能/亿华通/上海重塑等)"},
+    {"chain_id":5,"name":"碳纤维复合材料生产基地","category":"新材料","gap_type":"上游缺口",
+     "estimated_investment":"15-30亿","priority":"中",
+     "description":"建设高性能碳纤维复合材料生产基地，应用于航空航天(依托新机场)、汽车轻量化等领域",
+     "target_enterprises":"碳纤维企业(光威复材/中复神鹰等)"},
+    {"chain_id":5,"name":"锂电池正极材料回收循环利用","category":"绿色循环","gap_type":"供应链缺口",
+     "estimated_investment":"5-10亿","priority":"高",
+     "description":"引进废旧锂电池正极材料回收再利用产线，与德方纳米形成产业闭环",
+     "target_enterprises":"电池回收企业(格林美/华友循环/天奇股份等)"},
+    {"chain_id":5,"name":"氢能储运装备制造基地","category":"前沿技术","gap_type":"供应链缺口",
+     "estimated_investment":"8-15亿","priority":"中",
+     "description":"引进高压储氢罐/液氢储运装备制造企业，补齐高明氢能产业储运环节缺失",
+     "target_enterprises":"储氢装备企业(中材科技/富瑞氢能/科泰克等)"},
+    {"chain_id":5,"name":"半导体电子材料生产基地","category":"前沿材料","gap_type":"技术缺口",
+     "estimated_investment":"20-50亿","priority":"中",
+     "description":"引进光刻胶/电子特气/湿电子化学品等半导体电子材料企业，切入高附加值材料赛道",
+     "target_enterprises":"半导体材料企业(彤程新材/华特气体/晶瑞电材等)"},
+
+    # ═══ 现代物流/临空经济 (chain_id=6) ═══
+    {"chain_id":6,"name":"航空食品加工基地","category":"临空经济","gap_type":"下游缺口",
+     "estimated_investment":"3-8亿","priority":"高",
+     "description":"依托广州新机场建设航空食品加工基地，为航线提供配餐服务，同时发展预制菜产业",
+     "target_enterprises":"航空食品企业(中翼航空食品/汉莎天厨等)"},
+    {"chain_id":6,"name":"跨境电商保税仓+分拨中心","category":"临空经济","gap_type":"供应链缺口",
+     "estimated_investment":"5-15亿","priority":"高",
+     "description":"建设跨境电商保税仓储和全球分拨中心，利用新机场货运能力和综保区政策优势",
+     "target_enterprises":"跨境电商平台(SHEIN/Temu/速卖通等)仓储物流服务商"},
+    {"chain_id":6,"name":"临空高端制造园(航空修造)","category":"临空经济","gap_type":"上游缺口",
+     "estimated_investment":"20-50亿","priority":"中",
+     "description":"规划临空高端制造园区，聚焦航空零部件制造、飞机维修等航空修造产业",
+     "target_enterprises":"航空制造企业(中航工业供应链企业等)"},
+    {"chain_id":6,"name":"综合保税区申报及配套设施","category":"口岸平台","gap_type":"供应链缺口",
+     "estimated_investment":"5-10亿","priority":"高",
+     "description":"加快推进综合保税区申报和建设，解决外贸物流通道不足、保税功能缺失的核心瓶颈",
+     "target_enterprises":"海关监管服务企业/国际贸易综合服务企业"},
+    {"chain_id":6,"name":"高明港升级多式联运枢纽","category":"港口物流","gap_type":"下游缺口",
+     "estimated_investment":"10-20亿","priority":"高",
+     "description":"整合高明11个码头资源，升级为5000吨级多式联运枢纽，实现水陆空铁四港联动",
+     "target_enterprises":"港口运营企业(招商港口/广州港等)/多式联运服务商"},
+
+    # ═══ 电子信息/数字经济 (chain_id=7) ═══
+    {"chain_id":7,"name":"半导体封装测试基地","category":"核心产业","gap_type":"技术缺口",
+     "estimated_investment":"30-50亿","priority":"中",
+     "description":"引进半导体封装测试产线，服务大湾区半导体设计企业，差异化定位先进封装",
+     "target_enterprises":"封测企业(长电科技/通富微电/华天科技等)"},
+    {"chain_id":7,"name":"AI算力应用产业基地","category":"数字经济","gap_type":"下游缺口",
+     "estimated_investment":"5-15亿","priority":"高",
+     "description":"围绕润泽智算中心建设AI应用产业基地，吸引AI大模型训练、推理应用企业入驻",
+     "target_enterprises":"AI企业(商汤/旷视/科大讯飞等)/云计算企业"},
+    {"chain_id":7,"name":"EMS/ODM电子制造服务基地","category":"电子制造","gap_type":"上游缺口",
+     "estimated_investment":"10-30亿","priority":"中",
+     "description":"引进大型电子制造服务(EMS)企业，补强高明电子信息产业代工制造环节缺失",
+     "target_enterprises":"EMS企业(立讯精密/歌尔股份/比亚迪电子等)"},
+    {"chain_id":7,"name":"工业软件/数字孪生产业园","category":"软件产业","gap_type":"技术缺口",
+     "estimated_investment":"5-10亿","priority":"中",
+     "description":"引进工业软件和数字孪生企业，服务高明制造业数字化转型需求",
+     "target_enterprises":"工业软件企业(中望软件/华大九天/用友网络等)"},
+
+    # ═══ 智能家居产业链 (chain_id=8) ═══
+    {"chain_id":8,"name":"智能家居物联网平台","category":"技术升级","gap_type":"技术缺口",
+     "estimated_investment":"2-8亿","priority":"中",
+     "description":"引进智能家居物联网平台企业，实现高明智能家居产品的互联互通和生态构建",
+     "target_enterprises":"物联网平台企业(小米生态链/华为鸿蒙等)"},
+    {"chain_id":8,"name":"智能传感器研发生产基地","category":"核心部件","gap_type":"供应链缺口",
+     "estimated_investment":"3-8亿","priority":"高",
+     "description":"引进智能家居专用传感器(人体感应/温湿度/气体等)研发制造企业，补强智能硬件上游",
+     "target_enterprises":"传感器企业(汉威科技/敏芯股份/睿创微纳等)"},
+    {"chain_id":8,"name":"智能家居检测认证实验室","category":"公共平台","gap_type":"技术缺口",
+     "estimated_investment":"1-3亿","priority":"中",
+     "description":"建设智能家居互联互通测试认证实验室，降低企业产品开发和认证成本",
+     "target_enterprises":"检测认证机构(SGS/TÜV/中国信通院等)"},
+    {"chain_id":8,"name":"智能家居跨境电商运营中心","category":"数字经济","gap_type":"下游缺口",
+     "estimated_investment":"2-5亿","priority":"中",
+     "description":"建设智能家居跨境电商运营中心，服务甜秘密等企业全球130+国家市场的品牌推广",
+     "target_enterprises":"跨境电商运营企业/海外品牌营销机构"},
+
+    # ═══ 新型电力系统装备产业链 (chain_id=9) ═══
+    {"chain_id":9,"name":"新型储能电池系统集成","category":"新能源","gap_type":"技术缺口",
+     "estimated_investment":"10-25亿","priority":"高",
+     "description":"引进新型储能电池系统集成企业，服务于南方电网新型电力系统建设需求",
+     "target_enterprises":"储能企业(宁德时代储能/比亚迪储能/阳光电源等)"},
+    {"chain_id":9,"name":"智能电网设备制造基地","category":"电力装备","gap_type":"上游缺口",
+     "estimated_investment":"10-20亿","priority":"高",
+     "description":"建设智能电网设备(智能电表/配电自动化/变电站)制造基地，配套南方电网采购需求",
+     "target_enterprises":"电力设备企业(许继电气/国电南瑞/四方股份等)"},
+    {"chain_id":9,"name":"IGBT/SiC功率半导体封装基地","category":"核心器件","gap_type":"供应链缺口",
+     "estimated_investment":"10-30亿","priority":"高",
+     "description":"引进IGBT和碳化硅功率半导体封装产线，服务于新型电力系统和新能源汽车产业",
+     "target_enterprises":"功率半导体企业(斯达半导/时代电气/中车半导体等)"},
+    {"chain_id":9,"name":"虚拟电厂运营平台","category":"数字能源","gap_type":"下游缺口",
+     "estimated_investment":"2-5亿","priority":"中",
+     "description":"建设虚拟电厂聚合运营平台，整合高明分布式储能和可调负荷资源参与电力市场交易",
+     "target_enterprises":"虚拟电厂运营企业(国能日新/恒实科技/特来电等)"},
+    {"chain_id":9,"name":"电力装备检测实验中心","category":"公共平台","gap_type":"技术缺口",
+     "estimated_investment":"3-8亿","priority":"中",
+     "description":"建设CNAS认证的电力装备高压检测实验中心，服务南网战新基地及大湾区电力设备企业",
+     "target_enterprises":"电力检测机构(中国电科院/南网科研院等)"},
 ]
 
 
@@ -588,8 +670,8 @@ def seed_database():
 
     # 招商引资机会点
     for op in INVESTMENT_OPPORTUNITIES:
-        sql = """INSERT INTO investment_opportunities (chain_id, name, category, estimated_investment, priority, description, target_enterprises)
-                 VALUES (:chain_id, :name, :category, :estimated_investment, :priority, :description, :target_enterprises)"""
+        sql = """INSERT INTO investment_opportunities (chain_id, name, category, gap_type, estimated_investment, priority, description, target_enterprises)
+                 VALUES (:chain_id, :name, :category, :gap_type, :estimated_investment, :priority, :description, :target_enterprises)"""
         with get_conn() as conn:
             conn.execute(sql, op)
     print(f"[数据] 招商引资机会 {len(INVESTMENT_OPPORTUNITIES)} 条写入完成")

@@ -155,20 +155,28 @@ def build_graph() -> nx.DiGraph:
                 G.add_edge(city_node, cnode, type="city_chain_flow", flow_type=flow_type,
                            label=flow_type, description=f.get('description',''), weight=1, color="#95A5A6")
 
-    # ── 8. 招商引资机会点节点 (新建!) ──────────────────
+    # ── 8. 招商引资机会点节点 (含缺口分类) ──────────────
     ops = query("SELECT * FROM investment_opportunities")
-    priority_colors = {"高": "#E67E22", "中": "#F1C40F", "低": "#95A5A6"}
+    gap_type_colors = {
+        "general": "#E67E22",      # 橙色 - 常规机会
+        "供应链缺口": "#E74C3C",   # 红色 - 供应链风险
+        "技术缺口": "#8E44AD",     # 紫色 - 技术缺失
+        "上游缺口": "#3498DB",     # 蓝色 - 上游供应缺失
+        "下游缺口": "#1ABC9C",     # 青色 - 下游市场缺失
+    }
     for op in ops:
         op_id = f"opp_{op['id']}"
-        pri_color = priority_colors.get(op.get('priority','中'), "#F1C40F")
+        gap_type = op.get('gap_type', 'general') or 'general'
+        node_color = gap_type_colors.get(gap_type, "#E67E22")
         G.add_node(op_id, id=op['id'], type="opportunity",
                    name=op['name'], category=op.get('category',''),
+                   gap_type=gap_type,
                    estimated_investment=op.get('estimated_investment',''),
                    priority=op.get('priority','中'),
                    target_enterprises=op.get('target_enterprises',''),
                    description=op.get('description',''),
                    label=op['name'][:15]+'…', title=f"[机会] {op['name']}",
-                   size=28, color=pri_color)
+                   size=28, color=node_color)
         # 机会→产业链
         if op['chain_id'] in chain_map:
             G.add_edge(op_id, chain_map[op['chain_id']], type="opportunity_in",
@@ -252,6 +260,55 @@ def search_graph(keyword: str) -> list:
         for r in rows:
             results.append({"type": label, "id": f"{id_prefix}_{r['id']}", "name": r['name']})
     return results
+
+
+def match_hot_industry(industry: str) -> dict:
+    """匹配热门行业关键词到图谱节点（搜索所有相关关键词）"""
+    # 从 hot_industries 获取该行业的所有关键词
+    try:
+        from hot_industries import HOT_INDUSTRIES
+        keywords = [industry]  # 默认用行业名称
+        for item in HOT_INDUSTRIES:
+            if item["name"] == industry:
+                keywords = item["keywords"]
+                break
+    except ImportError:
+        keywords = [industry]
+
+    matches = {"enterprises": [], "chains": [], "investments": [], "opportunities": [], "node_ids": [], "matched_keywords": keywords}
+
+    for kw in keywords:
+        q = f"%{kw}%"
+        rows = query("SELECT id, name FROM enterprises WHERE industry LIKE :q OR sub_industry LIKE :q OR description LIKE :q", {"q": q})
+        for r in rows:
+            nid = f"ent_{r['id']}"
+            if nid not in matches["node_ids"]:
+                matches["enterprises"].append(r)
+                matches["node_ids"].append(nid)
+
+        rows = query("SELECT id, chain_name as name FROM industry_chains WHERE chain_name LIKE :q OR description LIKE :q OR category LIKE :q", {"q": q})
+        for r in rows:
+            nid = f"chain_{r['id']}"
+            if nid not in matches["node_ids"]:
+                matches["chains"].append(r)
+                matches["node_ids"].append(nid)
+
+        rows = query("SELECT id, enterprise_name as name FROM investments WHERE industry LIKE :q OR description LIKE :q", {"q": q})
+        for r in rows:
+            nid = f"inv_{r['id']}"
+            if nid not in matches["node_ids"]:
+                matches["investments"].append(r)
+                matches["node_ids"].append(nid)
+
+        rows = query("SELECT id, name FROM investment_opportunities WHERE name LIKE :q OR description LIKE :q OR category LIKE :q OR target_enterprises LIKE :q", {"q": q})
+        for r in rows:
+            nid = f"opp_{r['id']}"
+            if nid not in matches["node_ids"]:
+                matches["opportunities"].append(r)
+                matches["node_ids"].append(nid)
+
+    matches["count"] = sum(len(v) for k, v in matches.items() if k not in ("node_ids", "matched_keywords"))
+    return matches
 
 
 def get_analysis() -> dict:

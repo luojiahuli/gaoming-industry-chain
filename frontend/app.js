@@ -23,6 +23,22 @@ const TYPE_LABELS = {
   opportunity: "招商机会",
 };
 
+const GAP_TYPE_COLORS = {
+  general: "#E67E22",
+  "供应链缺口": "#E74C3C",
+  "技术缺口": "#8E44AD",
+  "上游缺口": "#3498DB",
+  "下游缺口": "#1ABC9C",
+};
+
+const GAP_TYPE_LABELS = {
+  general: "招商机会",
+  "供应链缺口": "供应链缺口",
+  "技术缺口": "技术缺口",
+  "上游缺口": "上游缺口",
+  "下游缺口": "下游缺口",
+};
+
 // ── 初始化 ────────────────────────────────────────────────
 async function init() {
   svg = d3.select("#graph-svg");
@@ -32,6 +48,8 @@ async function init() {
 
   await loadData();
   loadStats();
+  loadHotIndustries();
+  showGapLegendIfNeeded();
 }
 
 async function loadData() {
@@ -118,6 +136,17 @@ function renderGraph() {
     .attr("stroke", "#1a2a3a")
     .attr("stroke-width", 2)
     .attr("opacity", 0.9);
+
+  // 缺口类型指示圈 (机会点节点增加虚线外圈)
+  node.filter(d => d.type === "opportunity" && d.gap_type && d.gap_type !== "general")
+    .append("circle")
+    .attr("class", "gap-ring")
+    .attr("r", (d) => (d.size || 20) + 5)
+    .attr("fill", "none")
+    .attr("stroke", (d) => GAP_TYPE_COLORS[d.gap_type] || "#E67E22")
+    .attr("stroke-width", 2.5)
+    .attr("stroke-dasharray", "5,3")
+    .attr("opacity", 0.7);
 
   // 标签
   node.append("text")
@@ -383,12 +412,20 @@ function renderCityDetail(d) {
 }
 
 function renderOpportunityDetail(d) {
+  const gapType = d.gap_type || 'general';
+  const gapColors = GAP_TYPE_COLORS;
+  const gapColor = gapColors[gapType] || "#E67E22";
+  const gapLabel = GAP_TYPE_LABELS[gapType] || "招商机会";
+  const gapCssClass = gapType === 'general' ? 'opportunity' :
+    gapType === '供应链缺口' ? 'gap-supply' :
+    gapType === '技术缺口' ? 'gap-tech' :
+    gapType === '上游缺口' ? 'gap-upstream' : 'gap-downstream';
   const el = document.getElementById("panel-content");
   el.innerHTML = `
     <div class="dp-header">
-      <span class="dp-type investment">招商引资机会</span>
+      <span class="dp-type ${gapCssClass}">${gapLabel}</span>
       <div class="dp-title">${d.name}</div>
-      <div class="dp-sub">优先级: ${d.priority || '中'} · ${d.category || ''}</div>
+      <div class="dp-sub">优先级: <span style="color:${d.priority === '高' ? '#E67E22' : '#F1C40F'}">${d.priority || '中'}</span> · ${d.category || ''}</div>
     </div>
     <div class="dp-section">
       <h3>机会描述</h3>
@@ -582,6 +619,90 @@ window.addEventListener("resize", () => {
   svg.attr("width", w).attr("height", h);
   if (simulation) simulation.force("center", d3.forceCenter(w / 2, h / 2)).alpha(0.3).restart();
 });
+
+// ── 热门行业筛选 ─────────────────────────────────────────
+async function loadHotIndustries() {
+  try {
+    const resp = await fetch(`${API_BASE}/hot-industries`);
+    const data = await resp.json();
+    const select = document.getElementById("hot-filter");
+    (data.industries || []).forEach(ind => {
+      const opt = document.createElement("option");
+      opt.value = ind.name;
+      opt.textContent = ind.name;
+      select.appendChild(opt);
+    });
+  } catch(e) { /* ignore - hot filter just won't work */ }
+}
+
+function showGapLegendIfNeeded() {
+  if (!graphData) return;
+  const hasGaps = graphData.nodes.some(n =>
+    n.type === "opportunity" && n.gap_type && n.gap_type !== "general"
+  );
+  if (hasGaps) {
+    document.getElementById("legend-gaps").classList.remove("hidden");
+  }
+}
+
+async function onHotFilterChange() {
+  const select = document.getElementById("hot-filter");
+  const value = select.value;
+  const countEl = document.getElementById("filter-count");
+  const allNodes = g.selectAll(".node-group");
+  const allLinks = g.selectAll("line");
+  const allLabels = g.selectAll(".edge-label");
+
+  if (!value) {
+    // 清除筛选
+    allNodes.select("circle").attr("opacity", 0.9);
+    allNodes.select(".halo").attr("stroke-width", 0);
+    allLinks.attr("stroke-opacity", 0.4);
+    allLabels.attr("opacity", 1);
+    countEl.classList.add("hidden");
+    return;
+  }
+
+  try {
+    const resp = await fetch(`${API_BASE}/hot-industries/match?industry=${encodeURIComponent(value)}`);
+    const result = await resp.json();
+    const matchedIds = new Set(result.node_ids || []);
+
+    // 淡出不匹配的节点
+    allNodes.each(function(d) {
+      const circle = d3.select(this).select("circle");
+      const halo = d3.select(this).select(".halo");
+      const gapRing = d3.select(this).select(".gap-ring");
+      if (matchedIds.has(d.id)) {
+        circle.attr("opacity", 1);
+        halo.attr("stroke-width", 3).attr("opacity", 0.8);
+        if (!gapRing.empty()) gapRing.attr("opacity", 1);
+      } else {
+        circle.attr("opacity", 0.15);
+        halo.attr("stroke-width", 0);
+        if (!gapRing.empty()) gapRing.attr("opacity", 0.15);
+      }
+    });
+
+    // 淡出无关联的边
+    allLinks.attr("stroke-opacity", function(d) {
+      const srcMatch = matchedIds.has(d.source.id || d.source);
+      const tgtMatch = matchedIds.has(d.target.id || d.target);
+      return (srcMatch && tgtMatch) ? 0.6 : 0.05;
+    });
+    allLabels.attr("opacity", function(d) {
+      const srcMatch = matchedIds.has(d.source.id || d.source);
+      const tgtMatch = matchedIds.has(d.target.id || d.target);
+      return (srcMatch && tgtMatch) ? 1 : 0.05;
+    });
+
+    // 显示计数
+    countEl.textContent = `${result.count || 0} 个匹配节点`;
+    countEl.classList.remove("hidden");
+  } catch(e) {
+    console.error("筛选失败:", e);
+  }
+}
 
 // ── 启动 ──────────────────────────────────────────────────
 document.addEventListener("DOMContentLoaded", init);

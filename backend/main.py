@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from database import *
 from graph_builder import (
     get_graph_data, get_enterprise_detail, get_chain_detail,
-    search_graph, get_analysis
+    search_graph, get_analysis, match_hot_industry
 )
 from data_collector import seed_database, scrape_gaoming_news
 
@@ -68,6 +68,20 @@ def api_analysis():
 def api_news():
     """抓取最新招商新闻"""
     return scrape_gaoming_news()
+
+
+@app.get("/api/hot-industries")
+def api_hot_industries():
+    """获取热门行业列表"""
+    from hot_industries import HOT_INDUSTRIES
+    return {"industries": HOT_INDUSTRIES}
+
+
+@app.get("/api/hot-industries/match")
+def api_hot_match(industry: str = Query("", min_length=1)):
+    """匹配热门行业到图谱节点"""
+    result = match_hot_industry(industry)
+    return result
 
 
 @app.get("/api/stats")

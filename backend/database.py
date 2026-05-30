@@ -107,6 +107,7 @@ def init_db():
             chain_id INTEGER NOT NULL,
             name TEXT NOT NULL,
             category TEXT,
+            gap_type TEXT DEFAULT 'general',  -- general/供应链缺口/技术缺口/上游缺口/下游缺口
             estimated_investment TEXT,
             priority TEXT DEFAULT '中',
             description TEXT,
