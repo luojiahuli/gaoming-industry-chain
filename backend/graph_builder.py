@@ -92,6 +92,16 @@ def build_graph() -> nx.DiGraph:
                    size=35, color="#E85A5A")
         if inv.get('chain_id') and inv['chain_id'] in chain_map:
             G.add_edge(inv_id, chain_map[inv['chain_id']], type="investment_in", role="招商入驻", weight=1.5)
+        # 招商项目→同名的企业节点连线
+        inv_name = inv['enterprise_name']
+        for n in G.nodes():
+            nd = G.nodes[n]
+            if nd.get('type') == 'enterprise':
+                ename = nd.get('name', '')
+                if ename and (ename in inv_name or inv_name in ename):
+                    G.add_edge(inv_id, n, type="investment_in", role="招商入驻",
+                               label=f"{inv.get('amount',0)}亿", weight=1.2, color="#E85A5A")
+                    break
 
     # ── 6. 基础设施节点 ──────────────────────────────────
     infras = query("SELECT * FROM infrastructure")
